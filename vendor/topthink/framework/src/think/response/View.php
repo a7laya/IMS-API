@@ -12,7 +12,6 @@ declare (strict_types = 1);
 
 namespace think\response;
 
-use think\Cookie;
 use think\Response;
 use think\View as BaseView;
 
@@ -57,12 +56,10 @@ class View extends Response
      */
     protected $isContent = false;
 
-    public function __construct(Cookie $cookie, BaseView $view, $data = '', int $code = 200)
+    public function __construct(BaseView $view, $data = '', int $code = 200)
     {
-        $this->init($data, $code);
-
-        $this->cookie = $cookie;
-        $this->view   = $view;
+        parent::__construct($data, $code);
+        $this->view = $view;
     }
 
     /**
@@ -87,7 +84,8 @@ class View extends Response
     {
         // 渲染模板输出
         return $this->view->filter($this->filter)
-            ->fetch($data, $this->vars, $this->isContent);
+            ->assign($this->vars)
+            ->fetch($data, $this->isContent);
     }
 
     /**

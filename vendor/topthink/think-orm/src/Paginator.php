@@ -24,7 +24,7 @@ use Traversable;
 
 /**
  * 分页基础类
- * @mixin Collection
+ * @method array all()
  */
 abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
@@ -42,13 +42,13 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
 
     /**
      * 当前页
-     * @var int
+     * @var integer
      */
     protected $currentPage;
 
     /**
      * 最后一页
-     * @var int
+     * @var integer
      */
     protected $lastPage;
 
@@ -60,7 +60,7 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
 
     /**
      * 每页数量
-     * @var int
+     * @var integer
      */
     protected $listRows;
 
@@ -351,11 +351,6 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
         return $this->items->all();
     }
 
-    /**
-     * 获取数据集
-     *
-     * @return Collection|\think\model\Collection
-     */
     public function getCollection()
     {
         return $this->items;
@@ -484,10 +479,11 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
 
     public function __call($name, $arguments)
     {
-        $result = call_user_func_array([$this->items, $name], $arguments);
+        $collection = $this->getCollection();
 
-        if ($result instanceof Collection) {
-            $this->items = $result;
+        $result = call_user_func_array([$collection, $name], $arguments);
+
+        if ($result === $collection) {
             return $this;
         }
 

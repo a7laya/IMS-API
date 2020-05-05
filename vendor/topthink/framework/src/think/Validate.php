@@ -130,8 +130,8 @@ class Validate
         'chsAlpha'    => '/^[\x{4e00}-\x{9fa5}a-zA-Z]+$/u',
         'chsAlphaNum' => '/^[\x{4e00}-\x{9fa5}a-zA-Z0-9]+$/u',
         'chsDash'     => '/^[\x{4e00}-\x{9fa5}a-zA-Z0-9\_\-]+$/u',
-        'mobile'      => '/^1[3-9]\d{9}$/',
-        'idCard'      => '/(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}$)/',
+        'mobile'      => '/^1[3-9][0-9]\d{8}$/',
+        'idCard'      => '/(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$)/',
         'zip'         => '/\d{6}/',
     ];
 
@@ -156,7 +156,7 @@ class Validate
 
     /**
      * 验证失败错误信息
-     * @var string|array
+     * @var array
      */
     protected $error = [];
 
@@ -491,7 +491,7 @@ class Validate
             // field => 'rule1|rule2...' field => ['rule1','rule2',...]
             if (strpos($key, '|')) {
                 // 字段|描述 用于指定属性名称
-                [$key, $title] = explode('|', $key);
+                list($key, $title) = explode('|', $key);
             } else {
                 $title = $this->field[$key] ?? $key;
             }
@@ -518,7 +518,11 @@ class Validate
                 // 没有返回true 则表示验证失败
                 if (!empty($this->batch)) {
                     // 批量验证
-                    $this->error[$key] = $result;
+                    if (is_array($result)) {
+                        $this->error = array_merge($this->error, $result);
+                    } else {
+                        $this->error[$key] = $result;
+                    }
                 } elseif ($this->failException) {
                     throw new ValidateException($result);
                 } else {
@@ -560,7 +564,7 @@ class Validate
                 $result = call_user_func_array($rule, [$value]);
             } else {
                 // 判断验证类型
-                [$type, $rule] = $this->getValidateType($key, $rule);
+                list($type, $rule) = $this->getValidateType($key, $rule);
 
                 $callback = $this->type[$type] ?? [$this, $type];
 
@@ -614,7 +618,7 @@ class Validate
                 $info   = is_numeric($key) ? '' : $key;
             } else {
                 // 判断验证类型
-                [$type, $rule, $info] = $this->getValidateType($key, $rule);
+                list($type, $rule, $info) = $this->getValidateType($key, $rule);
 
                 if (isset($this->append[$field]) && in_array($info, $this->append[$field])) {
 
@@ -682,7 +686,7 @@ class Validate
         }
 
         if (strpos($rule, ':')) {
-            [$type, $rule] = explode(':', $rule, 2);
+            list($type, $rule) = explode(':', $rule, 2);
             if (isset($this->alias[$type])) {
                 // 判断别名
                 $type = $this->alias[$type];
@@ -1072,13 +1076,13 @@ class Validate
         if ($rule) {
             $rule = explode(',', $rule);
 
-            [$width, $height, $type] = getimagesize($file->getRealPath());
+            list($width, $height, $type) = getimagesize($file->getRealPath());
 
             if (isset($rule[2])) {
                 $imageType = strtolower($rule[2]);
 
-                if ('jpg' == $imageType) {
-                    $imageType = 'jpeg';
+                if ('jpeg' == $imageType) {
+                    $imageType = 'jpg';
                 }
 
                 if (image_type_to_extension($type, false) != $imageType) {
@@ -1086,7 +1090,7 @@ class Validate
                 }
             }
 
-            [$w, $h] = $rule;
+            list($w, $h) = $rule;
 
             return $w == $width && $h == $height;
         }
@@ -1173,7 +1177,7 @@ class Validate
     public function filter($value, $rule): bool
     {
         if (is_string($rule) && strpos($rule, ',')) {
-            [$rule, $param] = explode(',', $rule);
+            list($rule, $param) = explode(',', $rule);
         } elseif (is_array($rule)) {
             $param = $rule[1] ?? null;
             $rule  = $rule[0];
@@ -1194,7 +1198,7 @@ class Validate
      */
     public function requireIf($value, $rule, array $data = []): bool
     {
-        [$field, $val] = explode(',', $rule);
+        list($field, $val) = explode(',', $rule);
 
         if ($this->getDataValue($data, $field) == $val) {
             return !empty($value) || '0' == $value;
@@ -1296,7 +1300,7 @@ class Validate
         if (is_string($rule)) {
             $rule = explode(',', $rule);
         }
-        [$min, $max] = $rule;
+        list($min, $max) = $rule;
 
         return $value >= $min && $value <= $max;
     }
@@ -1313,7 +1317,7 @@ class Validate
         if (is_string($rule)) {
             $rule = explode(',', $rule);
         }
-        [$min, $max] = $rule;
+        list($min, $max) = $rule;
 
         return $value < $min || $value > $max;
     }
@@ -1337,7 +1341,7 @@ class Validate
 
         if (is_string($rule) && strpos($rule, ',')) {
             // 长度区间
-            [$min, $max] = explode(',', $rule);
+            list($min, $max) = explode(',', $rule);
             return $length >= $min && $length <= $max;
         }
 
@@ -1452,7 +1456,7 @@ class Validate
             $rule = explode(',', $rule);
         }
 
-        [$start, $end] = $rule;
+        list($start, $end) = $rule;
 
         if (!is_numeric($start)) {
             $start = strtotime($start);
@@ -1512,10 +1516,7 @@ class Validate
         return is_scalar($value) && 1 === preg_match($rule, (string) $value);
     }
 
-    /**
-     * 获取错误信息
-     * @return array|string
-     */
+    // 获取错误信息
     public function getError()
     {
         return $this->error;
@@ -1555,9 +1556,9 @@ class Validate
      * @param string $title     字段描述名
      * @param string $type      验证规则名称
      * @param mixed  $rule      验证规则数据
-     * @return string|array
+     * @return string
      */
-    protected function getRuleMsg(string $attribute, string $title, string $type, $rule)
+    protected function getRuleMsg(string $attribute, string $title, string $type, $rule): string
     {
         if (isset($this->message[$attribute . '.' . $type])) {
             $msg = $this->message[$attribute . '.' . $type];
@@ -1573,31 +1574,14 @@ class Validate
             $msg = $title . $this->lang->get('not conform to the rules');
         }
 
-        if (is_array($msg)) {
-            return $this->errorMsgIsArray($msg, $rule, $title);
+        if (!is_string($msg)) {
+            return $msg;
         }
 
-        return $this->parseErrorMsg($msg, $rule, $title);
-    }
-
-    /**
-     * 获取验证规则的错误提示信息
-     * @access protected
-     * @param string $msg   错误信息
-     * @param mixed  $rule  验证规则数据
-     * @param string $title 字段描述名
-     * @return string
-     */
-    protected function parseErrorMsg(string $msg, $rule, string $title)
-    {
         if (0 === strpos($msg, '{%')) {
             $msg = $this->lang->get(substr($msg, 2, -1));
         } elseif ($this->lang->has($msg)) {
             $msg = $this->lang->get($msg);
-        }
-
-        if (is_array($msg)) {
-            return $this->errorMsgIsArray($msg, $rule, $title);
         }
 
         if (is_scalar($rule) && false !== strpos($msg, ':')) {
@@ -1618,24 +1602,6 @@ class Validate
             }
         }
 
-        return $msg;
-    }
-
-    /**
-     * 错误信息数组处理
-     * @access protected
-     * @param array $msg   错误信息
-     * @param mixed  $rule  验证规则数据
-     * @param string $title 字段描述名
-     * @return array
-     */
-    protected function errorMsgIsArray(array $msg, $rule, string $title)
-    {
-        foreach ($msg as $key => $val) {
-            if (is_string($val)) {
-                $msg[$key] = $this->parseErrorMsg($val, $rule, $title);
-            }
-        }
         return $msg;
     }
 

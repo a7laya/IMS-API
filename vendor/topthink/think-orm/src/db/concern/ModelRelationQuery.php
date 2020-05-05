@@ -183,7 +183,7 @@ trait ModelRelationQuery
     }
 
     /**
-     * 关联预载入 In方式
+     * 设置关联查询JOIN预查询
      * @access public
      * @param array|string $with 关联方法名称
      * @return $this
@@ -193,53 +193,6 @@ trait ModelRelationQuery
         if (!empty($with)) {
             $this->options['with'] = (array) $with;
         }
-
-        return $this;
-    }
-
-    /**
-     * 关联预载入 JOIN方式
-     * @access protected
-     * @param array|string $with     关联方法名
-     * @param string       $joinType JOIN方式
-     * @return $this
-     */
-    public function withJoin($with, string $joinType = '')
-    {
-        if (empty($with)) {
-            return $this;
-        }
-
-        $with  = (array) $with;
-        $first = true;
-
-        foreach ($with as $key => $relation) {
-            $closure = null;
-            $field   = true;
-
-            if ($relation instanceof Closure) {
-                // 支持闭包查询过滤关联条件
-                $closure  = $relation;
-                $relation = $key;
-            } elseif (is_array($relation)) {
-                $field    = $relation;
-                $relation = $key;
-            } elseif (is_string($relation) && strpos($relation, '.')) {
-                $relation = strstr($relation, '.', true);
-            }
-
-            $result = $this->model->eagerly($this, $relation, $field, $joinType, $closure, $first);
-
-            if (!$result) {
-                unset($with[$key]);
-            } else {
-                $first = false;
-            }
-        }
-
-        $this->via();
-
-        $this->options['with_join'] = $with;
 
         return $this;
     }
@@ -262,7 +215,29 @@ trait ModelRelationQuery
                 $this->field('*');
             }
 
-            $this->model->relationCount($this, (array) $relations, $aggregate, $field, true);
+            foreach ((array) $relations as $key => $relation) {
+                $closure = $aggregateField = null;
+
+                if ($relation instanceof Closure) {
+                    $closure  = $relation;
+                    $relation = $key;
+                } elseif (!is_int($key)) {
+                    $aggregateField = $relation;
+                    $relation       = $key;
+                }
+
+                $relation = Str::camel($relation);
+
+                $count = $this->model
+                    ->$relation()
+                    ->getRelationCountQuery($closure, $aggregate, $field, $aggregateField);
+
+                if (empty($aggregateField)) {
+                    $aggregateField = Str::snake($relation) . '_' . $aggregate;
+                }
+
+                $this->field(['(' . $count . ')' => $aggregateField]);
+            }
         }
 
         return $this;
@@ -296,9 +271,9 @@ trait ModelRelationQuery
         $relations = (array) $relation;
         foreach ($relations as $name => $relation) {
             if (!is_numeric($name)) {
-                $this->options['with_cache'][$name] = is_array($relation) ? $relation : [$key, $relation, $tag];
+                $this->options['with_cache'][Str::snake($name)] = is_array($relation) ? $relation : [$key, $relation, $tag];
             } else {
-                $this->options['with_cache'][$relation] = [$key, $expire, $tag];
+                $this->options['with_cache'][Str::snake($relation)] = [$key, $expire, $tag];
             }
         }
 
@@ -414,7 +389,7 @@ trait ModelRelationQuery
         if (!empty($this->options['with_attr'])) {
             foreach ($this->options['with_attr'] as $name => $val) {
                 if (strpos($name, '.')) {
-                    [$relation, $field] = explode('.', $name);
+                    list($relation, $field) = explode('.', $name);
 
                     $withRelationAttr[$relation][$field] = $val;
                     unset($this->options['with_attr'][$name]);
@@ -431,12 +406,12 @@ trait ModelRelationQuery
 
         if (!empty($this->options['with'])) {
             // 预载入
-            $result->eagerlyResultSet($resultSet, $this->options['with'], $withRelationAttr, false, $this->options['with_cache'] ?? false);
+            $result->eagerlyResultSet($resultSet, $this->options['with'], $withRelationAttr);
         }
 
         if (!empty($this->options['with_join'])) {
             // 预载入
-            $result->eagerlyResultSet($resultSet, $this->options['with_join'], $withRelationAttr, true, $this->options['with_cache'] ?? false);
+            $result->eagerlyResultSet($resultSet, $this->options['with_join'], $withRelationAttr, true);
         }
 
         // 模型数据集转换
@@ -458,7 +433,7 @@ trait ModelRelationQuery
         if (!empty($options['with_attr']) && empty($withRelationAttr)) {
             foreach ($options['with_attr'] as $name => $val) {
                 if (strpos($name, '.')) {
-                    [$relation, $field] = explode('.', $name);
+                    list($relation, $field) = explode('.', $name);
 
                     $withRelationAttr[$relation][$field] = $val;
                     unset($options['with_attr'][$name]);
@@ -508,7 +483,7 @@ trait ModelRelationQuery
         // 关联统计
         if (!empty($options['with_count'])) {
             foreach ($options['with_count'] as $val) {
-                $result->relationCount($this, (array) $val[0], $val[1], $val[2], false);
+                $result->relationCount($result, (array) $val[0], $val[1], $val[2]);
             }
         }
     }

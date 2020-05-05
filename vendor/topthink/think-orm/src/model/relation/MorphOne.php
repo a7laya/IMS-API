@@ -142,7 +142,10 @@ class MorphOne extends Relation
             $data = $this->eagerlyMorphToOne([
                 [$morphKey, 'in', $range],
                 [$morphType, '=', $type],
-            ], $subRelation, $closure, $cache);
+            ], $relation, $subRelation, $closure, $cache);
+
+            // 关联属性名
+            $attr = Str::snake($relation);
 
             // 关联数据封装
             foreach ($resultSet as $result) {
@@ -154,7 +157,7 @@ class MorphOne extends Relation
                     $relationModel->exists(true);
                 }
 
-                $result->setRelation($relation, $relationModel);
+                $result->setRelation($attr, $relationModel);
             }
         }
     }
@@ -178,7 +181,7 @@ class MorphOne extends Relation
             $data = $this->eagerlyMorphToOne([
                 [$this->morphKey, '=', $pk],
                 [$this->morphType, '=', $this->type],
-            ], $subRelation, $closure, $cache);
+            ], $relation, $subRelation, $closure, $cache);
 
             if (isset($data[$pk])) {
                 $relationModel = $data[$pk];
@@ -188,7 +191,7 @@ class MorphOne extends Relation
                 $relationModel = null;
             }
 
-            $result->setRelation($relation, $relationModel);
+            $result->setRelation(Str::snake($relation), $relationModel);
         }
     }
 
@@ -196,12 +199,13 @@ class MorphOne extends Relation
      * 多态一对一 关联模型预查询
      * @access protected
      * @param  array   $where       关联预查询条件
+     * @param  string  $relation    关联名
      * @param  array   $subRelation 子关联
      * @param  Closure $closure     闭包
      * @param  array   $cache       关联缓存
      * @return array
      */
-    protected function eagerlyMorphToOne(array $where, array $subRelation = [], $closure = null, array $cache = []): array
+    protected function eagerlyMorphToOne(array $where, string $relation, array $subRelation = [], $closure = null, array $cache = []): array
     {
         // 预载入关联查询 支持嵌套预载入
         if ($closure) {

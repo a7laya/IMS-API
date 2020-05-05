@@ -12,8 +12,10 @@ declare (strict_types = 1);
 
 namespace think\db\concern;
 
+use Closure;
 use think\db\Raw;
 use think\helper\Str;
+use think\model\relation\OneToOne;
 
 /**
  * JOIN和VIEW查询
@@ -109,7 +111,7 @@ trait JoinAndViewQuery
             // 使用别名
             if (strpos($join, ' ')) {
                 // 使用别名
-                [$table, $alias] = explode(' ', $join);
+                list($table, $alias) = explode(' ', $join);
             } else {
                 $table = $join;
                 if (false === strpos($join, '.')) {
@@ -127,6 +129,58 @@ trait JoinAndViewQuery
         }
 
         return $table;
+    }
+
+    /**
+     * 关联预载入 JOIN方式
+     * @access protected
+     * @param array|string $with     关联方法名
+     * @param string       $joinType JOIN方式
+     * @return $this
+     */
+    public function withJoin($with, string $joinType = '')
+    {
+        if (empty($with)) {
+            return $this;
+        }
+
+        $first = true;
+
+        /** @var Model $class */
+        $class = $this->model;
+        foreach ((array) $with as $key => $relation) {
+            $closure = null;
+            $field   = true;
+
+            if ($relation instanceof Closure) {
+                // 支持闭包查询过滤关联条件
+                $closure  = $relation;
+                $relation = $key;
+            } elseif (is_array($relation)) {
+                $field    = $relation;
+                $relation = $key;
+            } elseif (is_string($relation) && strpos($relation, '.')) {
+                $relation = strstr($relation, '.', true);
+            }
+
+            /** @var Relation $model */
+            $relation = Str::camel($relation);
+            $model    = $class->$relation();
+
+            if ($model instanceof OneToOne) {
+                $model->eagerly($this, $relation, $field, $joinType, $closure, $first);
+                $first = false;
+            } else {
+                // 不支持其它关联
+                unset($with[$key]);
+            }
+        }
+
+        $this->via();
+
+        $this->options['with_join'] = $with;
+
+        return $this;
     }
 
     /**
@@ -209,7 +263,7 @@ trait JoinAndViewQuery
             foreach ($options['order'] as $key => $val) {
                 if (is_numeric($key) && is_string($val)) {
                     if (strpos($val, ' ')) {
-                        [$field, $sort] = explode(' ', $val);
+                        list($field, $sort) = explode(' ', $val);
                         if (array_key_exists($field, $options['map'])) {
                             $options['order'][$options['map'][$field]] = $sort;
                             unset($options['order'][$key]);

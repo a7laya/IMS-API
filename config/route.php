@@ -1,6 +1,16 @@
 <?php
 // +----------------------------------------------------------------------
-// | 路由设置
+// | ThinkPHP [ WE CAN DO IT JUST THINK ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: liu21st <liu21st@gmail.com>
+// +----------------------------------------------------------------------
+
+// +----------------------------------------------------------------------
+// | 应用设置
 // +----------------------------------------------------------------------
 
 return [
@@ -13,11 +23,17 @@ return [
     // 是否开启路由延迟解析
     'url_lazy_route'        => false,
     // 是否强制使用路由
-    'url_route_must'        => false,
+    'url_route_must'        => true,
     // 合并路由规则
     'route_rule_merge'      => false,
     // 路由是否完全匹配
-    'route_complete_match'  => false,
+    'route_complete_match'  => true,
+    // 是否开启路由缓存
+    'route_check_cache'     => false,
+    // 路由缓存连接参数
+    'route_cache_option'    => [],
+    // 路由缓存Key
+    'route_check_cache_key' => '',
     // 访问控制器层名称
     'controller_layer'      => 'controller',
     // 空控制器名

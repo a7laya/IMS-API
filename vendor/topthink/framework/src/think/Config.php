@@ -85,8 +85,8 @@ class Config
      */
     protected function parse(string $file, string $name): array
     {
-        $type   = pathinfo($file, PATHINFO_EXTENSION);
-        $config = [];
+        $type = pathinfo($file, PATHINFO_EXTENSION);
+
         switch ($type) {
             case 'php':
                 $config = include $file;
@@ -105,7 +105,7 @@ class Config
                 break;
         }
 
-        return is_array($config) ? $this->set($config, strtolower($name)) : [];
+        return isset($config) && is_array($config) ? $this->set($config, strtolower($name)) : [];
     }
 
     /**

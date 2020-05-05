@@ -16,7 +16,7 @@ namespace think;
  * 响应输出基础类
  * @package think
  */
-abstract class Response
+class Response
 {
     /**
      * 原始数据
@@ -79,12 +79,12 @@ abstract class Response
     protected $session;
 
     /**
-     * 初始化
-     * @access protected
-     * @param  mixed  $data 输出数据
-     * @param  int    $code 状态码
+     * 架构函数
+     * @access public
+     * @param  mixed $data    输出数据
+     * @param  int   $code
      */
-    protected function init($data = '', int $code = 200)
+    public function __construct($data = '', int $code = 200)
     {
         $this->data($data);
         $this->code = $code;
@@ -95,16 +95,32 @@ abstract class Response
     /**
      * 创建Response对象
      * @access public
-     * @param  mixed  $data 输出数据
-     * @param  string $type 输出类型
-     * @param  int    $code 状态码
+     * @param  mixed  $data    输出数据
+     * @param  string $type    输出类型
+     * @param  int    $code
      * @return Response
      */
-    public static function create($data = '', string $type = 'html', int $code = 200): Response
+    public static function create($data = '', string $type = '', int $code = 200): Response
     {
         $class = false !== strpos($type, '\\') ? $type : '\\think\\response\\' . ucfirst(strtolower($type));
 
-        return Container::getInstance()->invokeClass($class, [$data, $code]);
+        if (class_exists($class)) {
+            return Container::getInstance()->invokeClass($class, [$data, $code]);
+        }
+
+        return new static($data, $code);
+    }
+
+    /**
+     * 设置Cookie对象
+     * @access public
+     * @param  Cookie $cookie Cookie对象
+     * @return $this
+     */
+    public function setCookie(Cookie $cookie)
+    {
+        $this->cookie = $cookie;
+        return $this;
     }
 
     /**
@@ -138,9 +154,8 @@ abstract class Response
                 header($name . (!is_null($val) ? ':' . $val : ''));
             }
         }
-        if ($this->cookie) {
-            $this->cookie->save();
-        }
+
+        $this->cookie->save();
 
         $this->sendData($data);
 
@@ -219,21 +234,6 @@ abstract class Response
     public function isAllowCache()
     {
         return $this->allowCache;
-    }
-
-    /**
-     * 设置Cookie
-     * @access public
-     * @param  string $name  cookie名称
-     * @param  string $value cookie值
-     * @param  mixed  $option 可选参数
-     * @return $this
-     */
-    public function cookie(string $name, string $value, $option = null)
-    {
-        $this->cookie->set($name, $value, $option);
-
-        return $this;
     }
 
     /**

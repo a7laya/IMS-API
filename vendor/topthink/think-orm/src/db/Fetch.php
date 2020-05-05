@@ -61,7 +61,7 @@ class Fetch
     {
         $this->query->parseOptions();
 
-        $field = $aggregate . '(' . $this->builder->parseKey($this->query, $field) . ') AS think_' . strtolower($aggregate);
+        $field = $aggregate . '(' . $this->builder->parseKey($this->query, $field) . ') AS tp_' . strtolower($aggregate);
 
         return $this->value($field, 0, false);
     }
@@ -303,7 +303,7 @@ class Fetch
 
         if (!empty($options['soft_delete'])) {
             // 软删除
-            [$field, $condition] = $options['soft_delete'];
+            list($field, $condition) = $options['soft_delete'];
             if ($condition) {
                 $this->query->setOption('soft_delete', null);
                 $this->query->setOption('data', [$field => $condition]);

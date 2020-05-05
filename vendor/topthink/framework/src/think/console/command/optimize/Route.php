@@ -21,32 +21,37 @@ class Route extends Command
     protected function configure()
     {
         $this->setName('optimize:route')
-            ->addArgument('dir', Argument::OPTIONAL, 'dir name .')
+            ->addArgument('app', Argument::OPTIONAL, 'app name.')
             ->setDescription('Build app route cache.');
     }
 
     protected function execute(Input $input, Output $output)
     {
-        $dir = $input->getArgument('dir') ?: '';
+        $app = $input->getArgument('app');
 
-        $path = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . ($dir ? $dir . DIRECTORY_SEPARATOR : '');
+        if (empty($app) && $this->isMultiApp()) {
+            $output->writeln('<error>Miss app name!</error>');
+            return false;
+        }
+
+        $path = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . ($app ? $app . DIRECTORY_SEPARATOR : '');
 
         $filename = $path . 'route.php';
         if (is_file($filename)) {
             unlink($filename);
         }
 
-        file_put_contents($filename, $this->buildRouteCache($dir));
+        file_put_contents($filename, $this->buildRouteCache($app));
         $output->writeln('<info>Succeed!</info>');
     }
 
-    protected function buildRouteCache(string $dir = null): string
+    protected function buildRouteCache(string $app = null): string
     {
         $this->app->route->clear();
         $this->app->route->lazy(false);
 
         // 路由检测
-        $path = $this->app->getRootPath() . ($dir ? 'app' . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR : '') . 'route' . DIRECTORY_SEPARATOR ;
+        $path = $this->app->getRootPath() . 'route' . DIRECTORY_SEPARATOR . ($app ? $app . DIRECTORY_SEPARATOR : '');
 
         $files = is_dir($path) ? scandir($path) : [];
 

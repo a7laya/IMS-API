@@ -12,7 +12,6 @@ declare (strict_types = 1);
 
 namespace think;
 
-use think\event\AppInit;
 use think\helper\Str;
 use think\initializer\BootService;
 use think\initializer\Error;
@@ -39,7 +38,7 @@ use think\initializer\RegisterService;
  */
 class App extends Container
 {
-    const VERSION = '6.0.2';
+    const VERSION = '6.0.0RC4';
 
     /**
      * 应用调试模式
@@ -88,12 +87,6 @@ class App extends Container
      * @var string
      */
     protected $runtimePath = '';
-
-    /**
-     * 路由定义目录
-     * @var string
-     */
-    protected $routePath = '';
 
     /**
      * 配置后缀
@@ -319,9 +312,9 @@ class App extends Container
 
     /**
      * 设置应用目录
-     * @param string $path 应用目录
+     * @param $path
      */
-    public function setAppPath(string $path)
+    public function setAppPath($path)
     {
         $this->appPath = $path;
     }
@@ -338,9 +331,9 @@ class App extends Container
 
     /**
      * 设置runtime目录
-     * @param string $path 定义目录
+     * @param $path
      */
-    public function setRuntimePath(string $path): void
+    public function setRuntimePath($path)
     {
         $this->runtimePath = $path;
     }
@@ -428,7 +421,7 @@ class App extends Container
         $this->loadLangPack($langSet);
 
         // 监听AppInit
-        $this->event->trigger(AppInit::class);
+        $this->event->trigger('AppInit');
 
         date_default_timezone_set($this->config->get('app.default_timezone', 'Asia/Shanghai'));
 

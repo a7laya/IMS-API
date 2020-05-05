@@ -1,29 +1,19 @@
 <?php
-declare (strict_types = 1);
 
 namespace {%namespace%};
 
-class {%className%}  extends \think\Service
+use think\Service;
+
+class {%className%}  extends Service
 {
 
-    /**
-     * 注册服务
-     *
-     * @return mixed
-     */
     public function register()
     {
-    	//
+    	
     }
 
-    
-    /**
-     * 执行服务
-     *
-     * @return mixed
-     */
     public function boot()
     {
-        //
+
     }
 }

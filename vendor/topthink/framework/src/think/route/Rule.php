@@ -38,12 +38,6 @@ abstract class Rule
     protected $name;
 
     /**
-     * 所在域名
-     * @var string
-     */
-    protected $domain;
-
-    /**
      * 路由对象
      * @var Route
      */
@@ -219,7 +213,7 @@ abstract class Rule
      */
     public function getDomain(): string
     {
-        return $this->domain ?: $this->parent->getDomain();
+        return $this->parent->getDomain();
     }
 
     /**
@@ -315,7 +309,6 @@ abstract class Rule
      */
     public function domain(string $domain)
     {
-        $this->domain = $domain;
         return $this->setOption('domain', $domain);
     }
 
@@ -387,17 +380,17 @@ abstract class Rule
     /**
      * 指定路由中间件
      * @access public
-     * @param string|array|Closure $middleware 中间件
-     * @param mixed $params 参数
+     * @param  string|array|Closure $middleware 中间件
+     * @param  mixed                $param 参数
      * @return $this
      */
-    public function middleware($middleware, ...$params)
+    public function middleware($middleware, $param = null)
     {
-        if (empty($params) && is_array($middleware)) {
+        if (is_null($param) && is_array($middleware)) {
             $this->option['middleware'] = $middleware;
         } else {
             foreach ((array) $middleware as $item) {
-                $this->option['middleware'][] = [$item, $params];
+                $this->option['middleware'][] = [$item, $param];
             }
         }
 

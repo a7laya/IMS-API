@@ -66,11 +66,6 @@ class HasOne extends OneToOne
             ->find();
 
         if ($relationModel) {
-            if (!empty($this->bindAttr)) {
-                // 绑定关联属性
-                $this->bindAttr($relationModel, $this->parent);
-            }
-
             $relationModel->setParent(clone $this->parent);
         }
 
@@ -219,7 +214,10 @@ class HasOne extends OneToOne
 
             $data = $this->eagerlyWhere([
                 [$foreignKey, 'in', $range],
-            ], $foreignKey, $subRelation, $closure, $cache);
+            ], $foreignKey, $relation, $subRelation, $closure, $cache);
+
+            // 关联属性名
+            $attr = Str::snake($relation);
 
             // 关联数据封装
             foreach ($resultSet as $result) {
@@ -237,7 +235,7 @@ class HasOne extends OneToOne
                     $this->bindAttr($relationModel, $result);
                 } else {
                     // 设置关联属性
-                    $result->setRelation($relation, $relationModel);
+                    $result->setRelation($attr, $relationModel);
                 }
             }
         }
@@ -262,7 +260,7 @@ class HasOne extends OneToOne
 
         $data = $this->eagerlyWhere([
             [$foreignKey, '=', $result->$localKey],
-        ], $foreignKey, $subRelation, $closure, $cache);
+        ], $foreignKey, $relation, $subRelation, $closure, $cache);
 
         // 关联模型
         if (!isset($data[$result->$localKey])) {
@@ -277,7 +275,7 @@ class HasOne extends OneToOne
             // 绑定关联属性
             $this->bindAttr($relationModel, $result);
         } else {
-            $result->setRelation($relation, $relationModel);
+            $result->setRelation(Str::snake($relation), $relationModel);
         }
     }
 

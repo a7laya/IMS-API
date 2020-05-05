@@ -1,7 +1,7 @@
 <?php
 /* http://www.upupw.net */
 /* webmaster@upupw.net */
-$version="19.07.18SF";
+$version="18.08.23SF";
 date_default_timezone_set('Asia/Shanghai') && error_reporting(0);
 function _GET($n) { return isset($_GET[$n]) ? $_GET[$n] : NULL; }
 function _SERVER($n) { return isset($_SERVER[$n]) ? $_SERVER[$n] : '[undefine]'; }
@@ -31,8 +31,6 @@ $host="127.0.0.1:".$_POST['mysqlPort'];
 $Info = array();
 $Info['php_ini_file'] = function_exists('php_ini_loaded_file') ? php_ini_loaded_file() : '[undefine]';
 $mcrypt = get_extension_funcs('mcrypt') ? YES : NO;
-$xmlrpc = get_extension_funcs('xmlrpc') ? YES : NO;
-$fileinfo = get_extension_funcs('fileinfo') ? YES : NO;
 $ftp = get_extension_funcs('ftp') ? YES : NO;
 $link = @mysqli_connect($host, $_POST['mysqlUser'], $_POST['mysqlPassword']);
 $errno = mysqli_connect_errno();
@@ -149,12 +147,8 @@ if(version_compare(PHP_VERSION,'7.0.0', '<')){
 <td class="fl">
 <?=gmdate('Y-m-d H:i:s', time() + 3600 * 8)?>
 </td>
-<?php
-if(version_compare(PHP_VERSION,'5.3.0', '<')){
-	echo "<td class='er'>XML-RPC组件</td><td class='fc'>".$xmlrpc."</td>";
-}else{
-	echo "<td class='er'>FileInfo组件</td><td class='fc'>".$fileinfo."</td>";
-}?>
+<td class="er" >FileInfo组件</td>
+<td class="fc"><?=get_extension_funcs('fileinfo') ? YES : NO ?></td>
 </tr>
 <tr>
 <td class="er">便捷管理入口</td>

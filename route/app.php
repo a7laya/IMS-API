@@ -10,8 +10,10 @@
 // +----------------------------------------------------------------------
 use think\facade\Route;
 
-Route::get('think', function () {
-    return 'hello,ThinkPHP6!';
-});
+// Route::group('admin',function(){
+//     // 管理员相关
+//     Route::resource('manager','Manager');
 
-Route::get('hello/:name', 'index/hello');
+// })->allowCrossDomain();
+
+

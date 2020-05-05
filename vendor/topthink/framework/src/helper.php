@@ -45,7 +45,7 @@ if (!function_exists('abort')) {
      * @param string           $message 错误信息
      * @param array            $header  参数
      */
-    function abort($code, string $message = '', array $header = [])
+    function abort($code, string $message = null, array $header = [])
     {
         if ($code instanceof Response) {
             throw new HttpResponseException($code);
@@ -238,7 +238,7 @@ if (!function_exists('halt')) {
     {
         dump(...$vars);
 
-        throw new HttpResponseException(Response::create());
+        throw new HttpResponseException(new Response);
     }
 }
 
@@ -274,8 +274,8 @@ if (!function_exists('input')) {
         }
 
         return isset($has) ?
-        request()->has($key, $method) :
-        request()->$method($key, $default, $filter);
+            request()->has($key, $method) :
+            request()->$method($key, $default, $filter);
     }
 }
 
@@ -366,13 +366,19 @@ if (!function_exists('parse_name')) {
 if (!function_exists('redirect')) {
     /**
      * 获取\think\response\Redirect对象实例
-     * @param string $url  重定向地址
-     * @param int    $code 状态码
+     * @param mixed         $url    重定向地址 支持Url::build方法的地址
+     * @param array|integer $params 额外参数
+     * @param int           $code   状态码
      * @return \think\response\Redirect
      */
-    function redirect(string $url = '', int $code = 302): Redirect
+    function redirect($url = [], $params = [], $code = 302): Redirect
     {
-        return Response::create($url, 'redirect', $code);
+        if (is_integer($params)) {
+            $code   = $params;
+            $params = [];
+        }
+
+        return Response::create($url, 'redirect', $code)->params($params);
     }
 }
 
@@ -409,13 +415,11 @@ if (!function_exists('session')) {
      * @param mixed  $value session值
      * @return mixed
      */
-    function session($name = '', $value = '')
+    function session(string $name = null, $value = '')
     {
         if (is_null($name)) {
             // 清除
             Session::clear();
-        } elseif ('' === $name) {
-            return Session::all();
         } elseif (is_null($value)) {
             // 删除
             Session::delete($name);
@@ -523,7 +527,7 @@ if (!function_exists('validate')) {
         } else {
             if (strpos($validate, '.')) {
                 // 支持场景
-                [$validate, $scene] = explode('.', $validate);
+                list($validate, $scene) = explode('.', $validate);
             }
 
             $class = false !== strpos($validate, '\\') ? $validate : app()->parseClass('validate', $validate);
@@ -638,7 +642,7 @@ if (!function_exists('public_path')) {
 
 if (!function_exists('runtime_path')) {
     /**
-     * 获取应用运行时目录
+     * 获取web根目录
      *
      * @param string $path
      * @return string

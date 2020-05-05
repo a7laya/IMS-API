@@ -191,7 +191,10 @@ class HasManyThrough extends Relation
 
             $data = $this->eagerlyWhere([
                 [$this->foreignKey, 'in', $range],
-            ], $foreignKey, $subRelation, $closure, $cache);
+            ], $foreignKey, $relation, $subRelation, $closure, $cache);
+
+            // 关联属性名
+            $attr = Str::snake($relation);
 
             // 关联数据封装
             foreach ($resultSet as $result) {
@@ -201,7 +204,7 @@ class HasManyThrough extends Relation
                 }
 
                 // 设置关联属性
-                $result->setRelation($relation, $this->resultSetBuild($data[$pk], clone $this->parent));
+                $result->setRelation($attr, $this->resultSetBuild($data[$pk], clone $this->parent));
             }
         }
     }
@@ -226,14 +229,14 @@ class HasManyThrough extends Relation
 
         $data = $this->eagerlyWhere([
             [$foreignKey, '=', $pk],
-        ], $foreignKey, $subRelation, $closure, $cache);
+        ], $foreignKey, $relation, $subRelation, $closure, $cache);
 
         // 关联数据封装
         if (!isset($data[$pk])) {
             $data[$pk] = [];
         }
 
-        $result->setRelation($relation, $this->resultSetBuild($data[$pk], clone $this->parent));
+        $result->setRelation(Str::snake($relation), $this->resultSetBuild($data[$pk], clone $this->parent));
     }
 
     /**
@@ -241,12 +244,13 @@ class HasManyThrough extends Relation
      * @access public
      * @param  array   $where       关联预查询条件
      * @param  string  $key         关联键名
+     * @param  string  $relation    关联名
      * @param  array   $subRelation 子关联
      * @param  Closure $closure
      * @param  array   $cache       关联缓存
      * @return array
      */
-    protected function eagerlyWhere(array $where, string $key, array $subRelation = [], Closure $closure = null, array $cache = []): array
+    protected function eagerlyWhere(array $where, string $key, string $relation, array $subRelation = [], Closure $closure = null, array $cache = []): array
     {
         // 预载入关联查询 支持嵌套预载入
         $throughList = $this->through->where($where)->select();

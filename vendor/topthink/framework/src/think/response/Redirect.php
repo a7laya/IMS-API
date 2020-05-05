@@ -12,9 +12,9 @@ declare (strict_types = 1);
 
 namespace think\response;
 
-use think\Cookie;
 use think\Request;
 use think\Response;
+use think\Route;
 use think\Session;
 
 /**
@@ -23,13 +23,17 @@ use think\Session;
 class Redirect extends Response
 {
 
+    protected $options = [];
+
+    // URL参数
+    protected $params = [];
+    protected $route;
     protected $request;
 
-    public function __construct(Cookie $cookie, Request $request, Session $session, $data = '', int $code = 302)
+    public function __construct(Route $route, Request $request, Session $session, $data = '', int $code = 302)
     {
-        $this->init((string) $data, $code);
-
-        $this->cookie  = $cookie;
+        parent::__construct((string) $data, $code);
+        $this->route   = $route;
         $this->request = $request;
         $this->session = $session;
 
@@ -44,7 +48,7 @@ class Redirect extends Response
      */
     protected function output($data): string
     {
-        $this->header['Location'] = $data;
+        $this->header['Location'] = $this->getTargetUrl();
 
         return '';
     }
@@ -65,6 +69,27 @@ class Redirect extends Response
         } else {
             $this->session->flash($name, $value);
         }
+
+        return $this;
+    }
+
+    /**
+     * 获取跳转地址
+     * @access public
+     * @return string
+     */
+    public function getTargetUrl()
+    {
+        if (strpos($this->data, '://') || (0 === strpos($this->data, '/') && empty($this->params))) {
+            return $this->data;
+        } else {
+            return $this->route->buildUrl($this->data, $this->params);
+        }
+    }
+
+    public function params($params = [])
+    {
+        $this->params = $params;
 
         return $this;
     }

@@ -2,12 +2,12 @@
 
 namespace think\tests;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use stdClass;
 use think\Container;
 use think\exception\ClassNotFoundException;
-use think\exception\FuncNotFoundException;
 
 class Taylor
 {
@@ -20,11 +20,7 @@ class Taylor
 
     public function some(Container $container)
     {
-    }
 
-    protected function protectionFun()
-    {
-        return true;
     }
 
     public static function test(Container $container)
@@ -41,8 +37,6 @@ class Taylor
 class SomeClass
 {
     public $container;
-
-    public $count = 0;
 
     public function __construct(Container $container)
     {
@@ -205,35 +199,22 @@ class ContainerTest extends TestCase
         $this->assertSame($this, Container::getInstance());
     }
 
-    public function testResolving()
-    {
-        $container = new Container();
-        $container->bind(Container::class, $container);
-
-        $container->resolving(function (SomeClass $taylor, Container $container) {
-            $taylor->count++;
-        });
-        $container->resolving(SomeClass::class, function (SomeClass $taylor, Container $container) {
-            $taylor->count++;
-        });
-
-        /** @var SomeClass $someClass */
-        $someClass = $container->invokeClass(SomeClass::class);
-        $this->assertEquals(2, $someClass->count);
-    }
-
     public function testInvokeFunctionWithoutMethodThrowsException()
     {
-        $this->expectException(FuncNotFoundException::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage('function not exists: ContainerTestCallStub()');
-        $container = new Container();
+        $container = new Container;
         $container->invokeFunction('ContainerTestCallStub', []);
     }
 
-    public function testInvokeProtectionMethod()
+    public function testInvokeClosureFunctionWithoutMethodThrowsException()
     {
-        $container = new Container();
-        $this->assertTrue($container->invokeMethod([Taylor::class, 'protectionFun'], [], true));
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessageRegExp('/function not exists: {Closure}@.+#L\d+-\d+/');
+        $container = new Container;
+        $container->invokeFunction(function () {
+            throw new \ReflectionException('test exception');
+        });
     }
 
     public function testInvoke()
@@ -249,10 +230,6 @@ class ContainerTest extends TestCase
         $stub->expects($this->once())->method('some')->with($container)->will($this->returnSelf());
 
         $container->invokeMethod([$stub, 'some']);
-
-        $this->assertEquals('48', $container->invoke('ord', ['0']));
-
-        $this->assertSame($container, $container->invoke(Taylor::class . '::test', []));
 
         $this->assertSame($container, $container->invokeMethod(Taylor::class . '::test'));
 
@@ -284,7 +261,7 @@ class ContainerTest extends TestCase
     public function testInvokeMethodNotExists()
     {
         $container = $this->resolveContainer();
-        $this->expectException(FuncNotFoundException::class);
+        $this->expectException(Exception::class);
 
         $container->invokeMethod([SomeClass::class, 'any']);
     }

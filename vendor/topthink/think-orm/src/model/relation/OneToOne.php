@@ -98,8 +98,7 @@ abstract class OneToOne extends Relation
 
         if ($closure) {
             // 执行闭包查询
-            $closure($this->getClosureType($closure));
-
+            $closure($query);
             // 使用withField指定获取关联的字段
             if ($this->withField) {
                 $field = $this->withField;
@@ -234,7 +233,7 @@ abstract class OneToOne extends Relation
         // 重新组装模型数据
         foreach ($result->getData() as $key => $val) {
             if (strpos($key, '__')) {
-                [$name, $attr] = explode('__', $key, 2);
+                list($name, $attr) = explode('__', $key, 2);
                 if ($name == $relation) {
                     $list[$name][$attr] = $val;
                     unset($result->$key);
@@ -260,7 +259,7 @@ abstract class OneToOne extends Relation
             $relationModel = null;
         }
 
-        $result->setRelation($relation, $relationModel);
+        $result->setRelation(Str::snake($relation), $relationModel);
     }
 
     /**
@@ -290,12 +289,13 @@ abstract class OneToOne extends Relation
      * @access public
      * @param  array   $where       关联预查询条件
      * @param  string  $key         关联键名
+     * @param  string  $relation    关联名
      * @param  array   $subRelation 子关联
      * @param  Closure $closure
      * @param  array   $cache       关联缓存
      * @return array
      */
-    protected function eagerlyWhere(array $where, string $key, array $subRelation = [], Closure $closure = null, array $cache = [])
+    protected function eagerlyWhere(array $where, string $key, string $relation, array $subRelation = [], Closure $closure = null, array $cache = [])
     {
         // 预载入关联查询 支持嵌套预载入
         if ($closure) {

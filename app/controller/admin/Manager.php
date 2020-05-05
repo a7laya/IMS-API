@@ -1,181 +1,187 @@
 <?php
-declare (strict_types = 1);
 
 namespace app\controller\admin;
 
 use think\Request;
-// 继承基础控制器
-use app\BaseController;
- 
-class Manager extends BaseController
-{   
- 
+// 引入基类控制器
+use app\controller\common\Base;
 
-    // 当前方法对应的模型 $this->M,在BaseController中挂载 
+class Manager extends Base
+{
 
-    // 关闭自动实例化模型
-    // protected $autoModel = false;
-
-    // 重新定义模型路径
-    // protected $modelPath = 'Manager';
-
-    // 是否开启自动验证
-    // protected $autoValidate = false;
-
-    // 自定义验证场景 如果场景规则为'save1'
-    // protected $autoValidateScenes = [
-    //     'save' => 'save1'
-    // ];
-    
-    // 需要自动验证的方法
-    protected $excludeValidateCheck = ['index', 'save','update', 'updateStatus', 'delete', 'login'];
-
-
+    // 不需要验证
+    protected $excludeValidateCheck = ['logout'];
     /**
-     * 显示管理员列表
+     * 显示资源列表
      *
      * @return \think\Response
-     * 
-     * @desc 1.定义路由 2.定义validate(在controller配置$excludeValidateCheck) 
-     * 
      */
     public function index()
-    {   
-        // 获取参数  getValByKey公共方法写在common.php里面
-        $param = $this->request->param();
-        $page = $param['page']; // 当前页面
-        $limit = getValByKey('limit', $param, 10); // 每页限制条数,默认10条
-        $keyword = getValByKey('keyword', $param, ''); // 关键字, 默认为''
-
-        // 组织查询条件
+    {
+        $param = request()->param();
+        $limit = intval(getValByKey('limit',$param,10));
+        $keyword = getValByKey('keyword',$param,'');
         $where = [
-            ['username', 'like', '%'.$keyword.'%']
+        	[ 'username','like','%'.$keyword.'%' ]
         ];
-
-        // 计算总数,主要用于分页
+        
         $totalCount = $this->M->where($where)->count();
-
-        // 获取列表数据
-        $list = $this->M->page($page, $limit)
-                        ->where($where)
-                        ->with('role') // 关联到Manager模型中的 public function role()
-                        ->order('id', 'desc')
-                        ->select()
-                        ->hidden(['password']);
-        $role = \app\model\Role::field(['id', 'name'])->select();
+        $list = $this->M->page($param['page'],$limit)
+        		->where($where)
+        		->with('role')
+		        ->order([ 'id'=>'desc' ])
+				->select()
+				->hidden(['password']);
+		$role = \app\model\admin\Role::field(['id','name'])->select();
         return showSuccess([
-            'list' => $list,
-            'totalCount' => $totalCount,
-            'role' => $role
+        	'list'=>$list,
+        	'totalCount'=>$totalCount,
+        	'role'=>$role
         ]);
-
     }
-    
 
     /**
-     * 创建管理员
+     * 保存新建的资源
      *
      * @param  \think\Request  $request
      * @return \think\Response
-     * @desc 1.定义路由 2.定义validate(在controller配置$excludeValidateCheck) 3.$this->M->save($param)
      */
-    public function save(Request $request)
+    public function save()
     {
-        // halt($request)
-        
-        // $param = $request->param();
-        // 过滤参数
-        $param = $request->only(['username','password','avatar','role_id','status']);
+    	$param = request()->param();
+    	if (!array_key_exists('password',$param) || $param['password'] == '') {
+    		ApiException('密码不能为空');
+    	}
+        return showSuccess($this->M->Mcreate());
+    }
 
-        $res = $this->M->save($param);
-        return showSuccess($res);
+    /**
+     * 显示指定的资源
+     *
+     * @param  int  $id
+     * @return \think\Response
+     */
+    public function read($id)
+    {
+        
+        $user = request()->Model->append(['role.rules'])->toArray();
+        return showSuccess($user);
+    }
+
+    // 设置给用户设置权限
+    public function setRole(){
+        $roleId = request()->param('role_id');
+        $user = request()->Model;
+        return showSuccess($this->M->setRole($user,$roleId));
+    }
+
+    // 用户是否有某个权限
+    public function hasRule(){
+        $user = $request->UserModel;
+        $rule_id = request()->param('rule_id');
+        return showSuccess($this->M->hasRule($user,$rule_id));
     }
 
 
     /**
-     * 更新管理员
+     * 保存更新的资源
      *
      * @param  \think\Request  $request
      * @param  int  $id
      * @return \think\Response
-     * @desc 1.定义路由 2.定义validate(在controller配置$excludeValidateCheck) 3.$this->M->save($param)
      */
     public function update(Request $request, $id)
     {
-        // 过滤参数
-        $param = $request->only(['id','username','password','avatar','role_id','status']);        
-        // 找到要修改的记录集 在validate的验证$id的时候 通过BaseValidate中的isExist方法挂载在request()->Model
-        $res = $request->Model->save($param);
+    	$param = request()->param();
+    	// 超级管理员和演示数据禁止操作
+    	if ($request->Model->super || $request->Model->id == 9) {
+    		ApiException('演示数据，禁止操作');
+    	}
+    	if (array_key_exists('password',$param) && $param['password'] == '') {
+    		unset($param['password']);
+    	}
+        $res = request()->Model->save($param);
         return showSuccess($res);
     }
 
-    /**
-     * 修改管理员状态(启用|禁用)
-     */
-    public function updateStatus() {  
-        // 找到要修改的记录集 在validate的验证$id的时候 挂载在request()->Model
-        $manager = $this->request->Model;
-        // 不能禁用自己
-        if($this->request->UserModel->id === $manager->id){
-            return showSuccess('不能禁用自己');
-        }
-        $manager->status = $this->request->param('status');
-        return showSuccess($manager->save());
+    // 修改状态
+    public function updateStatus(Request $request)
+    {
+    	if ($request->Model->super) {
+    		ApiException('超级管理员禁止操作');
+    	}
+    	if ($request->Model->id == 9) {
+    		ApiException('演示数据，禁止操作');
+    	}
+        return showSuccess($this->M->_UpdateStatus());
     }
 
     /**
-     * 删除管理员
+     * 删除指定资源
      *
      * @param  int  $id
      * @return \think\Response
      */
     public function delete($id)
-    {   
-        /**
-         * 验证器里面设置了该场景的id验证
-         * 同时将该id所在的记录存入request->Model
-         */ 
-        $manager = $this->request->Model;
-
-        // 不能删除自己
-        if($this->request->UserModel->id == $manager->id){
-            ApiException('不能删除自己');
-        }
-
-        // 不能删除超级管理员
-        if($manager->super === 1){
-            ApiException('不能删除超级管理员');
-        }
-        
-        return showSuccess($manager->delete());
+    {
+    	// 超级管理员不能删除
+    	$manager = request()->Model;
+    	if($manager->super || $manager->id == 3){
+    		ApiException('超级管理员不能删除');
+    	}
+    	if ($manager->id == 9) {
+    		ApiException('演示数据，禁止操作');
+    	}
+        return showSuccess($this->M->Mdelete());
     }
 
-     /**
-     * 登录
-     *
-     * @param  string  $username
-     * @param  string  $password
-     * @return array $user
-     */
-    public function login(Request $request)
-    {
+
+    // 管理员登录
+    public function login(Request $request){
         $user = cms_login([
             'data'=>$request->UserModel
         ]);
-        return showSuccess($user);
+        // 获取当前用户所有权限
+        $data = $this->M->where('id',$user['id'])->with([
+        	'role'=>function($query){
+        		$query->with([
+        			'rules'=>function($q){
+        				$q->order('order','desc')
+        				->order('id','asc')
+        				->where('status',1);
+        			}
+        		]);
+        	}
+        ])->find()->toArray();
+        $data['token'] = $user['token'];
+        
+        $data['tree'] = [];
+        // 规则名称，按钮级别显示
+        $data['ruleNames'] = [];
+        // 无限级分类
+        $rules = $data['role']['rules'];
+        // 超级管理员
+        if($data['super'] === 1){
+        	$rules = \app\model\admin\Rule::where('status',1)->select()->toArray();
+        }
+        $data['tree'] = list_to_tree2($rules,'rule_id','child',0,function($item){
+        	return $item['menu'] === 1;
+        });
+        // 权限规则数组
+    	foreach ($data['role']['rules'] as $v) {
+    		if($v['condition'] && $v['name']){
+    			$data['ruleNames'][] = $v['name'];
+    		}
+    	}
+        return showSuccess($data);
     }
 
-    /**
-     * 登出
-     */
-    public function logout()
-    {
-        $res = cms_logout([
-            'token' => $this->request->header('token')
-        ]);
 
-        return showSuccess($res);
+    // 管理员退出
+    public function logout(Request $request){
+        return showSuccess(cms_logout([
+            'token'=>$request->header('token')
+        ]));
     }
-
 
 }

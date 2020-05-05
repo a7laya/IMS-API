@@ -12,7 +12,6 @@ declare (strict_types = 1);
 
 namespace think\response;
 
-use think\Cookie;
 use think\Response;
 
 /**
@@ -26,12 +25,6 @@ class Json extends Response
     ];
 
     protected $contentType = 'application/json';
-
-    public function __construct(Cookie $cookie, $data = '', int $code = 200)
-    {
-        $this->init($data, $code);
-        $this->cookie = $cookie;
-    }
 
     /**
      * 处理数据

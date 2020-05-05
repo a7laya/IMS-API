@@ -94,7 +94,10 @@ class HasMany extends Relation
         if (!empty($range)) {
             $data = $this->eagerlyOneToMany([
                 [$this->foreignKey, 'in', $range],
-            ], $subRelation, $closure, $cache);
+            ], $relation, $subRelation, $closure, $cache);
+
+            // 关联属性名
+            $attr = Str::snake($relation);
 
             // 关联数据封装
             foreach ($resultSet as $result) {
@@ -103,7 +106,7 @@ class HasMany extends Relation
                     $data[$pk] = [];
                 }
 
-                $result->setRelation($relation, $this->resultSetBuild($data[$pk], clone $this->parent));
+                $result->setRelation($attr, $this->resultSetBuild($data[$pk], clone $this->parent));
             }
         }
     }
@@ -126,14 +129,14 @@ class HasMany extends Relation
             $pk   = $result->$localKey;
             $data = $this->eagerlyOneToMany([
                 [$this->foreignKey, '=', $pk],
-            ], $subRelation, $closure, $cache);
+            ], $relation, $subRelation, $closure, $cache);
 
             // 关联数据封装
             if (!isset($data[$pk])) {
                 $data[$pk] = [];
             }
 
-            $result->setRelation($relation, $this->resultSetBuild($data[$pk], clone $this->parent));
+            $result->setRelation(Str::snake($relation), $this->resultSetBuild($data[$pk], clone $this->parent));
         }
     }
 
@@ -189,12 +192,13 @@ class HasMany extends Relation
      * 一对多 关联模型预查询
      * @access public
      * @param  array   $where       关联预查询条件
+     * @param  string  $relation    关联名
      * @param  array   $subRelation 子关联
      * @param  Closure $closure
      * @param  array   $cache       关联缓存
      * @return array
      */
-    protected function eagerlyOneToMany(array $where, array $subRelation = [], Closure $closure = null, array $cache = []): array
+    protected function eagerlyOneToMany(array $where, string $relation, array $subRelation = [], Closure $closure = null, array $cache = []): array
     {
         $foreignKey = $this->foreignKey;
 

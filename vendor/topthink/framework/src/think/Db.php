@@ -33,7 +33,6 @@ class Db extends DbManager
         $db->setEvent($event);
         $db->setLog($log);
         $db->setCache($cache);
-        $db->triggerSql();
 
         return $db;
     }
@@ -61,8 +60,8 @@ class Db extends DbManager
     /**
      * 获取配置参数
      * @access public
-     * @param string $name    配置参数
-     * @param mixed  $default 默认值
+     * @param  string $name 配置参数
+     * @param  mixed  $default 默认值
      * @return mixed
      */
     public function getConfig(string $name = '', $default = null)
@@ -71,7 +70,7 @@ class Db extends DbManager
             return $this->config->get('database.' . $name, $default);
         }
 
-        return $this->config->get('database', []);
+        return $this->config->get('database');
     }
 
     /**

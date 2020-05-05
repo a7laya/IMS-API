@@ -19,6 +19,7 @@ use think\App;
 use think\exception\ClassNotFoundException;
 use think\exception\HttpException;
 use think\helper\Str;
+use think\Request;
 use think\route\Dispatch;
 
 /**
@@ -79,44 +80,39 @@ class Controller extends Dispatch
         // 注册控制器中间件
         $this->registerControllerMiddleware($instance);
 
-        return $this->app->middleware->pipeline('controller')
-            ->send($this->request)
-            ->then(function () use ($instance) {
-                // 获取当前操作名
-                $suffix = $this->rule->config('action_suffix');
-                $action = $this->actionName . $suffix;
+        $this->app->middleware->controller(function (Request $request, $next) use ($instance) {
+            // 获取当前操作名
+            $action = $this->actionName . $this->rule->config('action_suffix');
 
-                if (is_callable([$instance, $action])) {
-                    $vars = $this->request->param();
-                    try {
-                        $reflect = new ReflectionMethod($instance, $action);
-                        // 严格获取当前操作方法名
-                        $actionName = $reflect->getName();
-                        if ($suffix) {
-                            $actionName = substr($actionName, 0, -strlen($suffix));
-                        }
-
-                        $this->request->setAction($actionName);
-                    } catch (ReflectionException $e) {
-                        $reflect = new ReflectionMethod($instance, '__call');
-                        $vars    = [$action, $vars];
-                        $this->request->setAction($action);
-                    }
-                } else {
-                    // 操作不存在
-                    throw new HttpException(404, 'method not exists:' . get_class($instance) . '->' . $action . '()');
+            if (is_callable([$instance, $action])) {
+                $vars = $this->request->param();
+                try {
+                    $reflect = new ReflectionMethod($instance, $action);
+                    // 严格获取当前操作方法名
+                    $actionName = $reflect->getName();
+                    $this->request->setAction($actionName);
+                } catch (ReflectionException $e) {
+                    $reflect = new ReflectionMethod($instance, '__call');
+                    $vars    = [$action, $vars];
+                    $this->request->setAction($action);
                 }
+            } else {
+                // 操作不存在
+                throw new HttpException(404, 'method not exists:' . get_class($instance) . '->' . $action . '()');
+            }
 
-                $data = $this->app->invokeReflectMethod($instance, $reflect, $vars);
+            $data = $this->app->invokeReflectMethod($instance, $reflect, $vars);
 
-                return $this->autoResponse($data);
-            });
+            return $this->autoResponse($data);
+        });
+
+        return $this->app->middleware->dispatch($this->request, 'controller');
     }
 
     /**
      * 使用反射机制注册控制器中间件
      * @access public
-     * @param object $controller 控制器实例
+     * @param  object $controller 控制器实例
      * @return void
      */
     protected function registerControllerMiddleware($controller): void
@@ -133,19 +129,15 @@ class Controller extends Dispatch
                 if (!is_int($key)) {
                     if (isset($val['only']) && !in_array($this->request->action(true), array_map(function ($item) {
                         return strtolower($item);
-                    }, is_string($val['only']) ? explode(",", $val['only']) : $val['only']))) {
+                    }, $val['only']))) {
                         continue;
                     } elseif (isset($val['except']) && in_array($this->request->action(true), array_map(function ($item) {
                         return strtolower($item);
-                    }, is_string($val['except']) ? explode(',', $val['except']) : $val['except']))) {
+                    }, $val['except']))) {
                         continue;
                     } else {
                         $val = $key;
                     }
-                }
-
-                if (is_string($val) && strpos($val, ':')) {
-                    $val = explode(':', $val, 2);
                 }
 
                 $this->app->middleware->controller($val);
@@ -156,7 +148,7 @@ class Controller extends Dispatch
     /**
      * 实例化访问控制器
      * @access public
-     * @param string $name 资源地址
+     * @param  string $name 资源地址
      * @return object
      * @throws ClassNotFoundException
      */

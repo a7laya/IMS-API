@@ -56,25 +56,31 @@ class Lang
     private $range = 'zh-cn';
 
     /**
+     * Request对象
+     * @var Request
+     */
+    protected $request;
+
+    /**
      * 构造方法
      * @access public
-     * @param array $config
      */
-    public function __construct(array $config = [])
+    public function __construct(Request $request, array $config = [])
     {
-        $this->config = array_merge($this->config, array_change_key_case($config));
-        $this->range  = $this->config['default_lang'];
+        $this->request = $request;
+        $this->config  = array_merge($this->config, array_change_key_case($config));
+        $this->range   = $this->config['default_lang'];
     }
 
-    public static function __make(Config $config)
+    public static function __make(Request $request, Config $config)
     {
-        return new static($config->get('lang'));
+        return new static($request, $config->get('lang'));
     }
 
     /**
      * 设置当前语言
      * @access public
-     * @param string $lang 语言
+     * @param  string $name 语言
      * @return void
      */
     public function setLangSet(string $lang): void
@@ -105,8 +111,8 @@ class Lang
     /**
      * 加载语言定义(不区分大小写)
      * @access public
-     * @param string|array $file  语言文件
-     * @param string       $range 语言作用域
+     * @param  string|array $file   语言文件
+     * @param  string       $range  语言作用域
      * @return array
      */
     public function load($file, $range = ''): array
@@ -135,7 +141,7 @@ class Lang
     /**
      * 解析语言文件
      * @access protected
-     * @param string $file 语言文件名
+     * @param  string $file 语言文件名
      * @return array
      */
     protected function parse(string $file): array
@@ -160,8 +166,8 @@ class Lang
     /**
      * 判断是否存在语言定义(不区分大小写)
      * @access public
-     * @param string|null $name  语言变量
-     * @param string      $range 语言作用域
+     * @param  string|null $name 语言变量
+     * @param  string      $range 语言作用域
      * @return bool
      */
     public function has(string $name, string $range = ''): bool
@@ -169,7 +175,7 @@ class Lang
         $range = $range ?: $this->range;
 
         if ($this->config['allow_group'] && strpos($name, '.')) {
-            [$name1, $name2] = explode('.', $name, 2);
+            list($name1, $name2) = explode('.', $name, 2);
             return isset($this->lang[$range][strtolower($name1)][$name2]);
         }
 
@@ -179,9 +185,9 @@ class Lang
     /**
      * 获取语言定义(不区分大小写)
      * @access public
-     * @param string|null $name  语言变量
-     * @param array       $vars  变量替换
-     * @param string      $range 语言作用域
+     * @param  string|null $name 语言变量
+     * @param  array       $vars 变量替换
+     * @param  string      $range 语言作用域
      * @return mixed
      */
     public function get(string $name = null, array $vars = [], string $range = '')
@@ -194,7 +200,7 @@ class Lang
         }
 
         if ($this->config['allow_group'] && strpos($name, '.')) {
-            [$name1, $name2] = explode('.', $name, 2);
+            list($name1, $name2) = explode('.', $name, 2);
 
             $value = $this->lang[$range][strtolower($name1)][$name2] ?? $name;
         } else {
@@ -228,28 +234,26 @@ class Lang
     /**
      * 自动侦测设置获取语言选择
      * @access public
-     * @param Request $request
      * @return string
      */
-    public function detect(Request $request): string
+    public function detect(): string
     {
         // 自动侦测设置获取语言选择
         $langSet = '';
 
-        if ($request->get($this->config['detect_var'])) {
+        if ($this->request->get($this->config['detect_var'])) {
             // url中设置了语言变量
-            $langSet = strtolower($request->get($this->config['detect_var']));
-        } elseif ($request->cookie($this->config['cookie_var'])) {
+            $langSet = strtolower($this->request->get($this->config['detect_var']));
+        } elseif ($this->request->cookie($this->config['cookie_var'])) {
             // Cookie中设置了语言变量
-            $langSet = strtolower($request->cookie($this->config['cookie_var']));
-        } elseif ($request->server('HTTP_ACCEPT_LANGUAGE')) {
+            $langSet = strtolower($this->request->cookie($this->config['cookie_var']));
+        } elseif ($this->request->server('HTTP_ACCEPT_LANGUAGE')) {
             // 自动侦测浏览器语言
-            $match = preg_match('/^([a-z\d\-]+)/i', $request->server('HTTP_ACCEPT_LANGUAGE'), $matches);
-            if ($match) {
-                $langSet = strtolower($matches[1]);
-                if (isset($this->config['accept_language'][$langSet])) {
-                    $langSet = $this->config['accept_language'][$langSet];
-                }
+            preg_match('/^([a-z\d\-]+)/i', $this->request->server('HTTP_ACCEPT_LANGUAGE'), $matches);
+            $langSet = strtolower($matches[1]);
+
+            if (isset($this->config['accept_language'][$langSet])) {
+                $langSet = $this->config['accept_language'][$langSet];
             }
         }
 
@@ -264,7 +268,7 @@ class Lang
     /**
      * 保存当前语言到Cookie
      * @access public
-     * @param Cookie $cookie Cookie对象
+     * @param  Cookie $cookie Cookie对象
      * @return void
      */
     public function saveToCookie(Cookie $cookie)

@@ -104,17 +104,6 @@ abstract class Manager
     }
 
     /**
-     * 获取驱动参数
-     * @param $name
-     * @return array
-     */
-    protected function resolveParams($name): array
-    {
-        $config = $this->resolveConfig($name);
-        return [$config];
-    }
-
-    /**
      * 创建驱动
      *
      * @param string $name
@@ -123,19 +112,18 @@ abstract class Manager
      */
     protected function createDriver(string $name)
     {
-        $type = $this->resolveType($name);
+        $type   = $this->resolveType($name);
+        $config = $this->resolveConfig($name);
 
         $method = 'create' . Str::studly($type) . 'Driver';
 
-        $params = $this->resolveParams($name);
-
         if (method_exists($this, $method)) {
-            return $this->$method(...$params);
+            return $this->$method($config);
         }
 
         $class = $this->resolveClass($type);
 
-        return $this->app->invokeClass($class, $params);
+        return $this->app->invokeClass($class, [$config]);
     }
 
     /**

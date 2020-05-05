@@ -23,7 +23,7 @@ abstract class Builder
 {
     /**
      * Connection对象
-     * @var ConnectionInterface
+     * @var Connection
      */
     protected $connection;
 
@@ -83,9 +83,9 @@ abstract class Builder
     /**
      * 架构函数
      * @access public
-     * @param  ConnectionInterface $connection 数据库连接对象实例
+     * @param  Connection $connection 数据库连接对象实例
      */
-    public function __construct(ConnectionInterface $connection)
+    public function __construct(Connection $connection)
     {
         $this->connection = $connection;
     }
@@ -93,9 +93,9 @@ abstract class Builder
     /**
      * 获取当前的连接对象实例
      * @access public
-     * @return ConnectionInterface
+     * @return Connection
      */
-    public function getConnection(): ConnectionInterface
+    public function getConnection(): Connection
     {
         return $this->connection;
     }
@@ -103,8 +103,8 @@ abstract class Builder
     /**
      * 注册查询表达式解析
      * @access public
-     * @param  string $name   解析方法
-     * @param  array  $parser 匹配表达式数据
+     * @param  string    $name   解析方法
+     * @param  array     $parser 匹配表达式数据
      * @return $this
      */
     public function bindParser(string $name, array $parser)
@@ -116,10 +116,10 @@ abstract class Builder
     /**
      * 数据分析
      * @access protected
-     * @param  Query $query     查询对象
-     * @param  array $data      数据
-     * @param  array $fields    字段信息
-     * @param  array $bind      参数绑定
+     * @param  Query     $query     查询对象
+     * @param  array     $data      数据
+     * @param  array     $fields    字段信息
+     * @param  array     $bind      参数绑定
      * @return array
      */
     protected function parseData(Query $query, array $data = [], array $fields = [], array $bind = []): array
@@ -156,9 +156,9 @@ abstract class Builder
             }
 
             if (false !== strpos($key, '->')) {
-                [$key, $name]  = explode('->', $key, 2);
-                $item          = $this->parseKey($query, $key);
-                $result[$item] = 'json_set(' . $item . ', \'$.' . $name . '\', ' . $this->parseDataBind($query, $key . '->' . $name, $val, $bind) . ')';
+                list($key, $name) = explode('->', $key, 2);
+                $item             = $this->parseKey($query, $key);
+                $result[$item]    = 'json_set(' . $item . ', \'$.' . $name . '\', ' . $this->parseDataBind($query, $key . '->' . $name, $val, $bind) . ')';
             } elseif (false === strpos($key, '.') && !in_array($key, $fields, true)) {
                 if ($options['strict']) {
                     throw new Exception('fields not exists:[' . $key . ']');
@@ -186,10 +186,10 @@ abstract class Builder
     /**
      * 数据绑定处理
      * @access protected
-     * @param  Query  $query     查询对象
-     * @param  string $key       字段名
-     * @param  mixed  $data      数据
-     * @param  array  $bind      绑定数据
+     * @param  Query     $query     查询对象
+     * @param  string    $key       字段名
+     * @param  mixed     $data      数据
+     * @param  array     $bind      绑定数据
      * @return string
      */
     protected function parseDataBind(Query $query, string $key, $data, array $bind = []): string
@@ -289,8 +289,8 @@ abstract class Builder
     /**
      * where分析
      * @access protected
-     * @param  Query $query   查询对象
-     * @param  mixed $where   查询条件
+     * @param  Query     $query   查询对象
+     * @param  mixed     $where   查询条件
      * @return string
      */
     protected function parseWhere(Query $query, array $where): string
@@ -300,7 +300,7 @@ abstract class Builder
 
         if (!empty($options['soft_delete'])) {
             // 附加软删除条件
-            [$field, $condition] = $options['soft_delete'];
+            list($field, $condition) = $options['soft_delete'];
 
             $binds    = $query->getFieldsBindType();
             $whereStr = $whereStr ? '( ' . $whereStr . ' ) AND ' : '';
@@ -368,7 +368,7 @@ abstract class Builder
 
             if ($value instanceof Closure) {
                 // 使用闭包查询
-                $where[] = $this->parseClosureWhere($query, $value, $logic);
+                $where[] = $this->parseClousreWhere($query, $value, $logic);
             } elseif (is_array($field)) {
                 $where[] = $this->parseMultiWhereField($query, $value, $field, $logic, $binds);
             } elseif ($field instanceof Raw) {
@@ -437,15 +437,14 @@ abstract class Builder
      * @param  string  $logic Logic
      * @return string
      */
-    protected function parseClosureWhere(Query $query, Closure $value, string $logic): string
+    protected function parseClousreWhere(Query $query, Closure $value, string $logic): string
     {
-        $newQuery = $query->newQuery();
+        $newQuery = $query->newQuery()->setConnection($this->connection);
         $value($newQuery);
-        $whereClosure = $this->buildWhere($newQuery, $newQuery->getOptions('where') ?: []);
+        $whereClause = $this->buildWhere($query, $newQuery->getOptions('where') ?: []);
 
-        if (!empty($whereClosure)) {
-            $query->bind($newQuery->getBind(false));
-            $where = ' ' . $logic . ' ( ' . $whereClosure . ' )';
+        if (!empty($whereClause)) {
+            $where = ' ' . $logic . ' ( ' . $whereClause . ' )';
         }
 
         return $where ?? '';
@@ -591,7 +590,7 @@ abstract class Builder
     protected function parseColumn(Query $query, string $key, $exp, array $value, string $field, int $bindType): string
     {
         // 字段比较查询
-        [$op, $field] = $value;
+        list($op, $field) = $value;
 
         if (!in_array(trim($op), ['=', '<>', '>', '>=', '<', '<='])) {
             throw new Exception('where express error:' . var_export($value, true));
@@ -802,7 +801,7 @@ abstract class Builder
 
         // 获取时间字段类型
         if (strpos($key, '.')) {
-            [$table, $key] = explode('.', $key);
+            list($table, $key) = explode('.', $key);
 
             if (isset($options['alias']) && $pos = array_search($table, $options['alias'])) {
                 $table = $pos;
@@ -858,10 +857,10 @@ abstract class Builder
         $joinStr = '';
 
         foreach ($join as $item) {
-            [$table, $type, $on] = $item;
+            list($table, $type, $on) = $item;
 
             if (strpos($on, '=')) {
-                [$val1, $val2] = explode('=', $on, 2);
+                list($val1, $val2) = explode('=', $on, 2);
 
                 $condition = $this->parseKey($query, $val1) . '=' . $this->parseKey($query, $val2);
             } else {

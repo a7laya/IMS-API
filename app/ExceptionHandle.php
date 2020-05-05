@@ -1,4 +1,14 @@
 <?php
+// +----------------------------------------------------------------------
+// | ThinkPHP [ WE CAN DO IT JUST THINK ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: liu21st <liu21st@gmail.com>
+// +----------------------------------------------------------------------
+
 namespace app;
 
 use think\db\exception\DataNotFoundException;
@@ -51,16 +61,8 @@ class ExceptionHandle extends Handle
     public function render($request, Throwable $e): Response
     {
         // 添加自定义异常处理机制
-        // 调试模式
-        if (env('APP_DEBUG')) {
-            // 其他错误交给系统处理
-            return parent::render($request, $e);
-        }
-        $headers = $e->getHeaders();
-        return json([
-            'msg'=>$e->getMessage(),
-            'errorCode'=>$e->getStatusCode()
-        ],array_key_exists('statusCode',$headers) ? $headers['statusCode'] : 404);
-
+	
+        // 其他错误交给系统处理
+        return parent::render($request, $e);
     }
 }
