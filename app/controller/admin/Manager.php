@@ -92,11 +92,7 @@ class Manager extends Base
      */
     public function update(Request $request, $id)
     {
-    	$param = request()->param();
-    	// 超级管理员和演示数据禁止操作
-    	if ($request->Model->super || $request->Model->id == 9) {
-    		ApiException('演示数据，禁止操作');
-    	}
+        $param = request()->param();
     	if (array_key_exists('password',$param) && $param['password'] == '') {
     		unset($param['password']);
     	}
@@ -109,9 +105,6 @@ class Manager extends Base
     {
     	if ($request->Model->super) {
     		ApiException('超级管理员禁止操作');
-    	}
-    	if ($request->Model->id == 9) {
-    		ApiException('演示数据，禁止操作');
     	}
         return showSuccess($this->M->_UpdateStatus());
     }
@@ -138,6 +131,7 @@ class Manager extends Base
 
     // 管理员登录
     public function login(Request $request){
+        // 设置并存储token
         $user = cms_login([
             'data'=>$request->UserModel
         ]);

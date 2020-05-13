@@ -7,7 +7,7 @@ use app\controller\common\Base;
 
 class Image extends Base
 {
-
+ 
     // 默认相册0 图片列表
     public function index(){
         return showSuccess($this->M->Mlist());

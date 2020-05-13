@@ -48,7 +48,7 @@ Route::group('admin',function(){
     Route::post('imageclass/:id','admin.ImageClass/update');
     Route::delete('imageclass/:id','admin.ImageClass/delete');
 
-    // 附件管理
+    // 图片管理
     Route::get('image/:page','admin.Image/index');
     Route::post('image/upload','admin.Image/save');
     Route::post('image/delete_all$','admin.Image/deleteAll');

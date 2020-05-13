@@ -16,7 +16,7 @@ class User extends BaseValidate
         'status'=>'require|in:0,1',
         'username'=>'require|NotEmpty|length:4,25',
         'password'=>'NotEmpty|min:6',
-        'avatar'=>'url',
+        // 'avatar'=>'url',
         'nickname'=>'chsDash',
 		'phone'=>'mobile',
 		'email'=>'email',

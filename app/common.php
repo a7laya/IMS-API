@@ -192,9 +192,13 @@ function uploadImage($file,$kb = 2048){
     } catch (think\exception\ValidateException $e) {
         ApiException($e->getMessage());
     }
-    // 上传
-    $Oss = new \app\lib\file\Oss();
-    return $Oss->uploadFile($file);
+    // 上传到oss云存储
+    // $Oss = new \app\lib\file\Oss();
+    // return $Oss->uploadFile($file);
+
+    // 上传到本地 在\config\filesystem.php配置的disk('public')
+    $savename = \think\facade\Filesystem::disk('public')->putFile( 'images', $file);
+    return ['url' => $savename, 'name' => $savename];
 }
 
 function httpWurl($url, $params, $method = 'GET', $header = array(), $multi = false){

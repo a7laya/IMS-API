@@ -49,9 +49,6 @@ class Rule extends Base
      */
     public function update(Request $request, $id)
     {
-    	if (request()->Model->id < 39) {
-    		ApiException('演示数据，禁止操作');
-    	}
         return showSuccess($this->M->Mupdate());
     }
 

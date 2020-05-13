@@ -12,7 +12,7 @@ class ImageClass extends BaseValidate
      */	
 	protected $rule = [
         'page' => 'require|integer|>:0',
-        'id'=>'require|integer|>:0|isExist',
+        'id'=>'require|integer|>=:0|isExist',
         'name'=>'require',
         'order'=>'integer|>=:0'
     ];
