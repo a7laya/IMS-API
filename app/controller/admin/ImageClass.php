@@ -83,7 +83,10 @@ class ImageClass extends Base
      * @return \think\Response
      */
     public function delete($id)
-    {
+    {   
+        // 先判断改相册里面下是否有图片
+        $count = \app\model\admin\Image::where('image_class_id', $id)->count();
+        if($count>0) ApiException('相册里面还有图片，不能删除。');
         return showSuccess($this->M->Mdelete());
     }
 }

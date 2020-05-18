@@ -97,7 +97,7 @@ class GoodsType extends Base
     public function delete($id)
     {
     	if ($id < 70) {
-    		ApiException('演示数据，禁止删除');
+    		// ApiException('演示数据，禁止删除');
     	}
         return showSuccess($this->M->Mdelete());
     }
@@ -105,7 +105,7 @@ class GoodsType extends Base
     // 批量删除
     public function deleteAll(){
     	if ($id < 70) {
-    		ApiException('演示数据，禁止删除');
+    		// ApiException('演示数据，禁止删除');
     	}
         return showSuccess($this->M->MdeleteAll());
     }

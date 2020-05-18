@@ -61,7 +61,6 @@ class ExpressValue extends Base
     // 删除
     public function delete($id)
     {
-    	ApiException('演示数据，禁止删除');
         return showSuccess($this->M->Mdelete());
     }
 

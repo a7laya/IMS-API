@@ -2,7 +2,7 @@
 declare (strict_types = 1);
 
 namespace app\validate\admin;
-
+ 
 use app\validate\BaseValidate;
 
 class Manager extends BaseValidate 

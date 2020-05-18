@@ -33,7 +33,7 @@ Route::group('admin',function(){
     Route::post('rule/:id/update_status','admin.Rule/updateStatus');
 
     // 角色
-    Route::post('role/:id/delete','admin.Role/delete');
+    Route::post('role/:id/delete','admin.Role/delete'); 
     Route::get('role/:page','admin.Role/index');
     Route::post('role','admin.Role/save');
     Route::post('role/set_rules','admin.Role/setRules'); // 设置角色权限

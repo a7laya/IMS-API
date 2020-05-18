@@ -8,6 +8,10 @@ use app\model\common\BaseModel;
  */
 class Image extends BaseModel
 {
+    // 图片属于哪个相册
+    public function imageClass(){
+        return $this->belongsTo('ImageClass');
+    }
 
     // 默认相册0 图片列表
     public function Mlist(){
@@ -66,7 +70,7 @@ class Image extends BaseModel
         // (new \app\lib\file\Oss())->delete($image->path);
         // 删除本地图片
         $url = "./storage/".$image->path;
-        unlink($url);
+        if(file_exists($url)) unlink($url);
         // 删除数据
         return $image->delete();
     }
@@ -77,7 +81,8 @@ class Image extends BaseModel
         $data = $this->where('id','in',$param)->select();
         // 删除所有数据
         $data->each(function($v){
-            unlink("./storage/".$v->path);
+            $url = "./storage/".$v->path;
+            if(file_exists($url)) unlink($url);
             $v->delete();
         });
         // $Oss = new \app\lib\file\Oss();

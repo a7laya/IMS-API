@@ -8,7 +8,7 @@ use app\model\common\BaseModel;
  */
 class Manager extends BaseModel
 {
-    // 用户有哪些角色
+    // 用户属于什么角色
     public function role(){
         return $this->belongsTo('Role');
     }
@@ -24,23 +24,31 @@ class Manager extends BaseModel
     	// 当前规则属于哪些用户组
     	$where = [ 'status'=>1 ];
     	$key = is_string($rule) ? 'condition' : 'id';
-    	$where[$key] = $rule;
+        $where[$key] = $rule;
+        // halt($user,$rule,$method,$where);
     	// 请求类型
     	if($method){
     		$where['method'] = $method;
     	}
-    	$r = \app\model\admin\Rule::where($where)->find();
+        $r = \app\model\admin\Rule::where($where)->find();
     	// 规则不存在
     	if(!$r){
-    		return false;
-    	}
+    		return ["validate"=>false, "msg"=>$rule.'规则未设置'];
+        }
+        // 获取当前访问的规则名称
+        $ruleName = $r->toArray()['name'];
     	// 获取规则对应角色
     	$roles = $r->roles;
         // 对比当前用户的角色
         $res = $roles->filter(function($v) use($user){
             return $v->id === $user->role->id;
         });
-        return !!$res->count();
+        // 当前角色下不存在当前规则
+        if(!$res->count()) {
+            return ["validate"=>false, "msg"=>'你没有权限访问 '.$ruleName];
+        }
+        
+        return ["validate"=>true, "msg"=>'ok'];
     }
 
     // 修改用户角色

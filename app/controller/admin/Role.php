@@ -47,17 +47,11 @@ class Role extends Base
      */
     public function update(Request $request, $id)
     {
-    	if (request()->Model->id == 2 || request()->Model->id == 3) {
-    		ApiException('演示数据，禁止操作');
-    	}
         return showSuccess($this->M->Mupdate());
     }
 
     // 给角色授予权限
     public function setRules(){
-    	if (request()->Model->id == 2 || request()->Model->id == 3) {
-    		return ApiException('演示数据，禁止操作');
-    	}
     	$param = request()->param();
         $rules = getValByKey('rule_ids',$param,[]);
         return showSuccess(request()->Model->setRules($rules));
@@ -72,9 +66,6 @@ class Role extends Base
     // 修改状态
     public function updateStatus(Request $request)
     {
-    	if (request()->Model->id == 2 || request()->Model->id == 3) {
-    		ApiException('演示数据，禁止操作');
-    	}
         return showSuccess($this->M->_UpdateStatus());
     }
     /**
@@ -85,9 +76,6 @@ class Role extends Base
      */
     public function delete($id)
     {
-    	if (request()->Model->id == 2 || request()->Model->id == 3) {
-    		ApiException('演示数据，禁止操作');
-    	}
     	if (count(request()->Model->managers) > 0) {
     		ApiException('该角色下还有其他管理员，请先修改');
     	}

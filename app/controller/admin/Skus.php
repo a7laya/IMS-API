@@ -84,13 +84,13 @@ class Skus extends Base
      */
     public function delete($id)
     {
-    	ApiException('演示数据，禁止删除');
+    	// ApiException('演示数据，禁止删除');
         return showSuccess($this->M->Mdelete());
     }
     
     // 批量删除
     public function deleteAll(){
-    	ApiException('演示数据，禁止删除');
+    	// ApiException('演示数据，禁止删除');
         return showSuccess($this->M->MdeleteAll());
     }
 }

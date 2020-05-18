@@ -130,7 +130,7 @@ function list_to_tree($array,$field = 'pid',$pid = 0,$level = 0){
     return $list;
 }
 
-/**
+/** 
 * 数据集组合分类树(多维数组)
 * @param     cate 分类结果集
 * @param     child 子树

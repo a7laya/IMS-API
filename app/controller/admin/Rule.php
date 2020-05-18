@@ -56,9 +56,6 @@ class Rule extends Base
     // 修改状态
     public function updateStatus(Request $request)
     {
-    	if (request()->Model->id < 39) {
-    		ApiException('演示数据，禁止操作');
-    	}
         return showSuccess($this->M->_UpdateStatus());
     }
 
@@ -70,9 +67,6 @@ class Rule extends Base
      */
     public function delete($id)
     {
-    	if (request()->Model->id < 39) {
-    		ApiException('演示数据，禁止操作');
-    	}
         return showSuccess($this->M->Mdelete());
     }
 }

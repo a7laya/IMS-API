@@ -85,9 +85,6 @@ class Category extends Base
     public function delete($id)
     {
     	$id = intval($id);
-    	if ($id <= 177) {
-    		ApiException('演示数据，禁止删除');
-    	}
         return showSuccess($this->M->Mdelete());
     }
     

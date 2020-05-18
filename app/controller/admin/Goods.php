@@ -214,7 +214,6 @@ class Goods extends Base
     
     // 彻底删除
     public function destroy(){
-    	ApiException('演示数据，禁止删除');
     	$ids = request()->param('ids');
     	$res = $this->M->onlyTrashed()->where('id','in',$ids)->select();
     	$res->each(function($item){
@@ -235,7 +234,6 @@ class Goods extends Base
     
     // 批量删除
     public function deleteAll(){
-    	// ApiException('演示数据，禁止删除');
     	$ids = request()->param('ids');
     	$res = $this->M->where('id','in',$ids)->select();
     	$res->each(function($item){

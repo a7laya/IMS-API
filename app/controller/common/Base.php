@@ -36,7 +36,7 @@ class Base extends BaseController
         // 实例化当前模型
         $this->getCurrentModel();
         // 自动验证
-        $this->autoValidateAction();
+        $this->autoValidateAction(); 
     }
 
     // 初始化控制器相关信息

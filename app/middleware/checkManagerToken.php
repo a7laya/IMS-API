@@ -31,11 +31,12 @@ class checkManagerToken
         if(!$request->UserModel->super){
         	if (!$request->UserModel->role->status) {
         		return ApiException('你所在角色组已被禁用');
-        	}
-        	$url = strtolower($request->controller().'/'.$request->action());
-			$r = (new $model)->hasRule($request->UserModel,$url,$request->method());
-			if(!$r){
-				return ApiException('你没有权限');
+            }
+            $rule = strtolower($request->controller().'/'.$request->action());
+            // hasRule 写在app/model/admin/Manager.php
+			$r = (new $model)->hasRule($request->UserModel,$rule,$request->method());
+			if(!$r['validate']){
+				return ApiException($r['msg']);
 			}
         }
         return $next($request);

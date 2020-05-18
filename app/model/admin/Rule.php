@@ -28,7 +28,8 @@ class Rule extends BaseModel
     // 列表
     public function Mlist(){
         $param = request()->param();
-        $arr = $this->select();
+        // laya 排序
+        $arr = $this->order('order','asc')->select();
         $totalCount = $this->count();
         $list = list_to_tree2($arr->toArray(),'rule_id');
         return [

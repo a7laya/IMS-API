@@ -86,7 +86,7 @@ class UserLevel extends Base
     public function delete($id)
     {
     	if($id == 3 || $id == 4 || $id == 5 || $id == 6){
-    		return ApiException('演示数据，禁止删除');
+    		return // ApiException('演示数据，禁止删除');
     	}
         return showSuccess($this->M->Mdelete());
     }

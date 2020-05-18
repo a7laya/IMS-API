@@ -115,15 +115,12 @@ class Manager extends Base
      * @param  int  $id
      * @return \think\Response
      */
-    public function delete($id)
+    public function delete($id) 
     {
     	// 超级管理员不能删除
     	$manager = request()->Model;
     	if($manager->super || $manager->id == 3){
     		ApiException('超级管理员不能删除');
-    	}
-    	if ($manager->id == 9) {
-    		ApiException('演示数据，禁止操作');
     	}
         return showSuccess($this->M->Mdelete());
     }
@@ -131,10 +128,12 @@ class Manager extends Base
 
     // 管理员登录
     public function login(Request $request){
+        // 在验证器中用户名密码验证成功后，将manager表中的信息挂在$request->UserModel 
         // 设置并存储token
         $user = cms_login([
             'data'=>$request->UserModel
         ]);
+        // $this->M 当前控制器对应的模型自动实例化
         // 获取当前用户所有权限
         $data = $this->M->where('id',$user['id'])->with([
         	'role'=>function($query){
@@ -143,7 +142,7 @@ class Manager extends Base
         				$q->order('order','desc')
         				->order('id','asc')
         				->where('status',1);
-        			}
+                    }
         		]);
         	}
         ])->find()->toArray();
