@@ -14,7 +14,7 @@ class User extends BaseValidate
         'page'=>'require|integer|>:0',
         'id'=>'require|integer|>:0|isExist:true,common\User',
         'status'=>'require|in:0,1',
-        'username'=>'require|NotEmpty|length:4,25',
+        'username'=>'require|NotEmpty|length:2,20',
         'password'=>'NotEmpty|min:6',
         // 'avatar'=>'url',
         'nickname'=>'chsDash',

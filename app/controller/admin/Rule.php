@@ -8,7 +8,8 @@ use app\controller\common\Base;
 
 class Rule extends Base
 {
-    /**
+    // protected $excludeValidateCheck = ['index'];
+    /** 
      * 显示资源列表
      *
      * @return \think\Response
@@ -69,4 +70,12 @@ class Rule extends Base
     {
         return showSuccess($this->M->Mdelete());
     }
+
+
+    // 排序
+	public function sortRule(){
+		$data = request()->param('sortdata');
+		$data = json_decode($data,true);
+		return showSuccess($this->M->saveAll($data));
+	}
 }

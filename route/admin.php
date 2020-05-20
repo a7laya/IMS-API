@@ -24,11 +24,12 @@ Route::group('admin',function(){
     Route::post('manager','admin.Manager/save');
     Route::post('manager/:id','admin.Manager/update');
     Route::post('manager/:id/update_status','admin.Manager/updateStatus');
-
+ 
     // 规则
     Route::get('rule/:page','admin.Rule/index');
     Route::post('rule/:id/delete','admin.Rule/delete');
     Route::post('rule','admin.Rule/save');
+    Route::post('rule/sort','admin.Rule/sortRule');
     Route::post('rule/:id','admin.Rule/update');
     Route::post('rule/:id/update_status','admin.Rule/updateStatus');
 

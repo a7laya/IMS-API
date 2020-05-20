@@ -13,15 +13,16 @@ class Rule extends BaseValidate
 	protected $rule = [
         'page' => 'require|integer|>:0',
         'id'=>'require|integer|>:0|isExist',
-        'rule_id'=>'require|integer|isExist:false',
+        'rule_id'=>'require|integer|isExist:false|checkRuleId',
         'status'=>'require|in:0,1',
         'name'=>'require',
         'condition'=>'require',
         'menu'=>'require|in:0,1',
         'order'=>'require|integer',
-        'method'=>'in:GET,POST,PUT,DELETE',
+        // 'method'=>'in:GET,POST,PUT,DELETE',
+        'sortdata'=>'require'
     ];
-    
+     
     /**
      * 定义错误信息
      * 格式：'字段名.规则名'	=>	'错误信息'
@@ -32,9 +33,16 @@ class Rule extends BaseValidate
 
     protected $scene = [
         'index'=>['page'],
-        'save'=>['rule_id','status','name','menu','order','method'],
-        'update'=>['id','rule_id','status','name','menu','order','method'],
+        'save'=>['rule_id','status','name','menu','order'],
+        'update'=>['id','rule_id','status','name','menu','order'],
         'delete'=>['id'],
-        'updateStatus'=>['id','status']
+        'updateStatus'=>['id','status'],
+        'sortRule'=>['sortdata']
     ];
+
+    // 不能将自己的id设置为父级id
+    protected function checkRuleId($value, $rule='', $data=[], $field='', $title=''){
+        if(getValByKey('id',$data)== $value) return '不能将自身设为父级';
+        return true;
+    }
 }

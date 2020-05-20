@@ -3,7 +3,7 @@
 namespace app\validate;
 
 class Manager extends BaseValidate
-{
+{ 
     /**
      * 定义验证规则
      * 格式：'字段名'	=>	['规则1','规则2'...]

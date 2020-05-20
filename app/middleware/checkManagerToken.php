@@ -34,7 +34,7 @@ class checkManagerToken
             }
             $rule = strtolower($request->controller().'/'.$request->action());
             // hasRule 写在app/model/admin/Manager.php
-			$r = (new $model)->hasRule($request->UserModel,$rule,$request->method());
+			$r = (new $model)->hasRule($request->UserModel,$rule);
 			if(!$r['validate']){
 				return ApiException($r['msg']);
 			}

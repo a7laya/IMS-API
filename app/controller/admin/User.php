@@ -121,9 +121,6 @@ class User extends Base
     public function delete($id)
     {
     	$id = request()->param('id');
-    	if($id == 3 || $id == 4){
-    		return // ApiException('演示数据，禁止删除');
-    	}
         return showSuccess($this->M->Mdelete());
     }
 

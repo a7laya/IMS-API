@@ -20,16 +20,12 @@ class Manager extends BaseModel
      * @param [type] $rule  需要验证规则模型
      * @return boolean
      */
-    public function hasRule($user,$rule,$method = false){
+    public function hasRule($user,$rule){
     	// 当前规则属于哪些用户组
     	$where = [ 'status'=>1 ];
     	$key = is_string($rule) ? 'condition' : 'id';
         $where[$key] = $rule;
         // halt($user,$rule,$method,$where);
-    	// 请求类型
-    	if($method){
-    		$where['method'] = $method;
-    	}
         $r = \app\model\admin\Rule::where($where)->find();
     	// 规则不存在
     	if(!$r){

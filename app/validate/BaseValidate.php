@@ -15,6 +15,7 @@ class BaseValidate extends Validate
 
     // 根据id判断是否存在，存在将实例加入request
     protected function isExist($value, $rule, $data='', $field='',$title = '记录'){
+        // halt(1234);
         $arr = explode(',',$rule);
         if (!$value) return true;
         $Model = count($arr) > 1 ? '\\app\\model\\'.$arr[1] :'\\app\\model\\'.str_replace('.','\\',request()->controller());

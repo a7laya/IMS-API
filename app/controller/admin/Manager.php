@@ -139,7 +139,7 @@ class Manager extends Base
         	'role'=>function($query){
         		$query->with([
         			'rules'=>function($q){
-        				$q->order('order','desc')
+        				$q->order('order','asc')
         				->order('id','asc')
         				->where('status',1);
                     }
