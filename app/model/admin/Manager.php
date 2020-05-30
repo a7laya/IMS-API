@@ -4,7 +4,7 @@ namespace app\model\admin;
 
 use app\model\common\BaseModel;
 /**
- * @mixin think\Model
+ * @mixin think\Model 
  */
 class Manager extends BaseModel
 {
@@ -19,6 +19,7 @@ class Manager extends BaseModel
      * @param [type] $user  当前用户模型
      * @param [type] $rule  需要验证规则模型
      * @return boolean
+     * @desc 如果要访问的资源不在rule表中，则默认放行，因为资源太多了，需要进行权限控制的再加入表中
      */
     public function hasRule($user,$rule){
     	// 当前规则属于哪些用户组
@@ -29,7 +30,7 @@ class Manager extends BaseModel
         $r = \app\model\admin\Rule::where($where)->find();
     	// 规则不存在
     	if(!$r){
-    		return ["validate"=>false, "msg"=>$rule.'规则未设置'];
+    		return ["validate"=>true, "msg"=>$rule.'规则未设置'];
         }
         // 获取当前访问的规则名称
         $ruleName = $r->toArray()['name'];

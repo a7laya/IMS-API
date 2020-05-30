@@ -1,16 +1,14 @@
 <?php
 /*
  * @Author: your name
- * @Date: 2020-05-27 11:07:37
- * @LastEditTime: 2020-05-27 11:07:38
- * @LastEditors: your name
+ * @Date: 2020-05-29 15:19:27
+ * @LastEditTime: 2020-05-29 15:43:13
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
- * @FilePath: /api.a7laya.com/app/validate/Image.php
+ * @FilePath: /api.a7laya.com/app/validate/SysField.php
  */ 
-
 namespace app\validate;
-
-class Image extends BaseValidate
+class SysField extends BaseValidate
 {
     /**
      * 定义验证规则
@@ -19,10 +17,10 @@ class Image extends BaseValidate
      * @var array
      */	
 	protected $rule = [
-        'page' => 'require|integer|>:0',
         'id'=>'require|integer|>:0|isExist',
-        'image_class_id|相册'=>'integer|>=:0|isExist:false,admin\ImageClass',
-        'name'=>'require|NotEmpty',
+        'page'=>'require|integer|>:0',
+        'name|字段名称'=>'require|unique:SysField',
+        'value|字段值'=>'require',
         'ids'=>'require|array'
     ];
     
@@ -36,10 +34,10 @@ class Image extends BaseValidate
 
     protected $scene = [
         'index'=>['page'],
-        'find'=>['page'],
-        'save'=>['image_class_id'],
-        'update'=>['id','name'],
+        'save'=>['name','value'],
+        'update'=>['id','name','value'],
         'delete'=>['id'],
-        'deleteAll'=>['ids']
+        'deleteAll'=>['ids'],
     ];
+
 }

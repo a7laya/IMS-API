@@ -87,12 +87,13 @@ class BaseModel extends Model
         $param = request()->param();
         $limit = intval(getValByKey('limit',$param,10));
         $page = intval(getValByKey('page',$param,1));
+        // $keyword = getValByKey('keyword',$param,'');
         $totalCount = $this->count();
         $list = $this->page($page,$limit)->order([
 			'order'=>'desc',
     		'id'=>'desc'
 		])->select();
-        return [
+        return [ 
         	'list'=>$list,
         	'totalCount'=>$totalCount
         ];

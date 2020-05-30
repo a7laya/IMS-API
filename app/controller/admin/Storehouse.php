@@ -3,11 +3,13 @@
 namespace app\controller\admin;
 
 use think\Request;
+// 引入基类控制器
 use app\controller\common\Base;
-class Category extends Base
+
+class Storehouse extends Base
 {
-	protected $excludeValidateCheck = ['app_category','index'];
-    /**
+    protected $excludeValidateCheck = ['index'];
+    /** 
      * 显示资源列表
      *
      * @return \think\Response
@@ -38,27 +40,6 @@ class Category extends Base
         return showSuccess($this->M->Mcreate());
     }
 
-    /**
-     * 显示指定的资源
-     *
-     * @param  int  $id
-     * @return \think\Response
-     */
-    public function read($id)
-    {
-        //
-    }
-
-    /**
-     * 显示编辑资源表单页.
-     *
-     * @param  int  $id
-     * @return \think\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
 
     /**
      * 保存更新的资源
@@ -69,12 +50,14 @@ class Category extends Base
      */
     public function update(Request $request, $id)
     {   
-        
         return showSuccess($this->M->Mupdate());
     }
 
-    public function updateStatus(){
-        return showSuccess($this->M->_updateStatus());
+
+    // 修改状态
+    public function updateStatus(Request $request)
+    {
+        return showSuccess($this->M->_UpdateStatus());
     }
 
     /**
@@ -85,29 +68,19 @@ class Category extends Base
      */
     public function delete($id)
     {
-        $id = intval($id);
-        if(\app\model\admin\Goods::where('category_id',$id)->count()>0) 
-            ApiException('该类别下有商品，不能删除');
-        if(\app\model\admin\Category::where('category_id',$id)->count()>0) 
-            ApiException('该类别下存在子类，不能删除');
         return showSuccess($this->M->Mdelete());
     }
-    
-    
-    
-    // app分类
-    public function app_category()
-    {
-    	$list = $this->M->with(['appCategoryItems'])->select();
-        return showSuccess($list);
-    }
 
-	
-	// 排序
-	public function sortCategory(){
-		$data = request()->param('sortdata');
-		$data = json_decode($data,true);
+
+    // 排序
+	public function sortStorehouse(){
+        $data = request()->param('sortdata');
+        foreach($data as &$v){
+            if($v['id'] == $v['storehouse_id']){
+                $v['storehouse_id'] = 0;
+            }
+        };
+		// $data = json_decode($data,true);
 		return showSuccess($this->M->saveAll($data));
 	}
-
 }

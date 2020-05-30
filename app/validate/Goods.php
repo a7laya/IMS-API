@@ -55,7 +55,7 @@ class Goods extends BaseValidate
 
     protected $scene = [
         'index'=>['page'],
-
+        'find' =>['page'],
 		'checkGoods'=>['id','ischeck'],
 		'restore'=>['ids'],
 		'destroy'=>['ids'],

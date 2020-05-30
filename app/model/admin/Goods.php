@@ -37,6 +37,12 @@ class Goods extends BaseModel
     public function category(){
     	return $this->belongsTo('Category');
     }
+
+    // 关联仓库
+    public function storehouse(){
+        return $this->belongsToMany('Storehouse','goods_storehouse');
+    }
+    
     
     // 关联评论
     public function comments(){

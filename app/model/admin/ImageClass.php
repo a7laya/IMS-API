@@ -1,4 +1,12 @@
 <?php
+/*
+ * @Author: your name
+ * @Date: 2020-05-27 15:47:55
+ * @LastEditTime: 2020-05-28 10:06:45
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: /api.a7laya.com/app/model/admin/ImageClass.php
+ */ 
 
 namespace app\model\admin;
 
@@ -9,7 +17,7 @@ use app\model\common\BaseModel;
  */
 class ImageClass extends BaseModel
 {
-    // 获取当前相册下的图片
+    // 获取当前相册下的图片 
     public function images(){
         return $this->hasMany('Image');
     }
@@ -25,7 +33,7 @@ class ImageClass extends BaseModel
         		])->select();
         return [
         	'list'=>$list,
-        	'totalCount'=>$totalCount
+            'totalCount'=>$totalCount,
         ];
     }
     
@@ -34,7 +42,6 @@ class ImageClass extends BaseModel
         $param = request()->param();
         $limit = intval(getValByKey('limit',$param,10));
         $model = request()->Model->images();
-        $totalCount = $model->count();
         $order = getValByKey('order',$param,'desc');
         $where = [];
         $keyword = getValByKey('keyword',$param,false);
@@ -45,7 +52,7 @@ class ImageClass extends BaseModel
         }
         return [
         	'list'=>$model->page($param['page'],$limit)->where($where)->order('id',$order)->select(),
-        	'totalCount'=>$totalCount
+        	'totalCount'=>$model->where($where)->order('id',$order)->count()
         ];
     }
 

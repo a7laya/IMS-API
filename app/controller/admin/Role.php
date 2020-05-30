@@ -39,7 +39,7 @@ class Role extends Base
 
 
     /**
-     * 保存更新的资源
+     * 保存更新的资源 
      *
      * @param  \think\Request  $request
      * @param  int  $id

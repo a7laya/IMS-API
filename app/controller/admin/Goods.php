@@ -68,7 +68,34 @@ class Goods extends Base
         ]);
     	
         return showSuccess($this->M->Mlist());
-    }
+	}
+	
+
+	/**
+     * 根据关键字搜索商品.
+     * @param page 页码
+     * @param limit 每页显示数量
+     * @param title 商品标题关键字
+     * @return \think\Response
+     */
+	public function find(Request $request)
+	{
+		$param = $request->param();
+		$limit = intval(getValByKey('limit',$param,20));
+		$model = $this->M;
+		if (array_key_exists('title',$param)) {
+        	$model = $model->field('id, title')->where('title','like','%'.$param['title'].'%');
+		}
+		$totalCount = $model->count();
+		$list = $model->page($param['page'],$limit)
+				->field('id, title')
+		        ->order([ 'id'=>'desc' ])
+				->select();
+		return showSuccess([
+			'list'=>$list,
+			'totalCount'=>$totalCount,
+		]);
+	}
 
     /**
      * 显示创建资源表单页.

@@ -2,6 +2,7 @@
 
 
 use think\facade\Route;
+Route::rule('/', 'Index/index');
 // 不需要验证
 Route::group('admin',function(){
     // 管理员登录
@@ -24,7 +25,15 @@ Route::group('admin',function(){
     Route::post('manager','admin.Manager/save');
     Route::post('manager/:id','admin.Manager/update');
     Route::post('manager/:id/update_status','admin.Manager/updateStatus');
- 
+    
+    // 仓库
+    Route::get('storehouse','admin.Storehouse/index');
+    Route::post('storehouse','admin.Storehouse/save');
+    Route::post('storehouse/sort','admin.Storehouse/sortStorehouse');
+    Route::post('storehouse/:id','admin.Storehouse/update');
+    Route::post('storehouse/:id/update_status','admin.Storehouse/updateStatus');
+    Route::delete('storehouse/:id','admin.Storehouse/delete');
+
     // 规则
     Route::get('rule/:page','admin.Rule/index');
     Route::post('rule/:id/delete','admin.Rule/delete');
@@ -44,15 +53,17 @@ Route::group('admin',function(){
 
     // 相册管理
     Route::get('imageclass/:id/image/:page$','admin.ImageClass/images');
+    Route::get('imageclass/:page/find','admin.ImageClass/find');
     Route::get('imageclass/:page','admin.ImageClass/index');
     Route::post('imageclass','admin.ImageClass/save');
     Route::post('imageclass/:id','admin.ImageClass/update');
     Route::delete('imageclass/:id','admin.ImageClass/delete');
 
     // 图片管理
+    Route::get('image/:page/find','admin.Image/find'); // 查找图片
     Route::get('image/:page','admin.Image/index');
     Route::post('image/upload','admin.Image/save');
-    Route::post('image/delete_all$','admin.Image/deleteAll');
+    Route::post('image/delete_all','admin.Image/deleteAll');
     Route::post('image/:id','admin.Image/update');
     Route::delete('image/:id','admin.Image/delete');
 
@@ -140,6 +151,7 @@ Route::group('admin',function(){
     Route::post('goods/updateskus/:id','admin.goods/updateSkus');
     Route::post('goods/banners/:id','admin.goods/updateBanners');
     Route::post('goods/attrs/:id','admin.goods/updateAttrs');
+    Route::get('goods/:page/find','admin.goods/find');
     Route::get('goods/:page','admin.goods/index');
     Route::post('goods/restore','admin.goods/restore');
     Route::post('goods/destroy','admin.goods/destroy');
@@ -183,6 +195,13 @@ Route::group('admin',function(){
     Route::post('coupon','admin.Coupon/save');
     Route::post('coupon/:id','admin.Coupon/update');
     Route::delete('coupon/:id','admin.Coupon/delete');
+
+    // 字段设置
+    Route::get('sys_field/:page','admin.SysField/index');
+    Route::post('sys_field','admin.SysField/save');
+    Route::post('sys_field/delete_all','admin.SysField/deleteAll');
+    Route::post('sys_field/:id/delete','admin.SysField/delete');
+    Route::post('sys_field/:id','admin.SysField/update');
 
     // 商品轮播图
     Route::post('goods/:goods_id/goods_banner','admin.goodsBanner/save');

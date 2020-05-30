@@ -17,6 +17,43 @@ class ImageClass extends Base
         return showSuccess($this->M->Mlist());
     }
 
+    /**
+     * 根据图片关键字找到对应相册
+     * @param keyword 图片名称的关键字
+     * @param page 页码
+     * @param limit 每页数量
+     * @return \think\Response
+     */
+    public function find(Request $request)
+    {   
+        $param = $request->param();
+        $model = $this->M;
+        $limit = intval(getValByKey('limit',$param,10000));
+        $keyword = getValByKey('keyword',$param,'');
+        $model = $model->withCount([
+            'images'=>function($q) use($keyword){
+                $q->where([
+                    ["name",'like','%'.$keyword.'%']
+                ]);  
+                // $q->where([
+                //     ["images_count",'>',0]
+                // ]);  
+            }
+        ]);
+        
+        $totalCount = $model->count();
+        $list = $model->page($param['page'],$limit)->order([
+            'order'=>'desc',
+            'id'=>'desc'
+        ])->select();
+
+        return showSuccess([
+        	'list'=>$list,
+            'totalCount'=>$totalCount,
+        ]);
+    }
+
+    // 根据相册显示图片
     public function images(){
         return showSuccess($this->M->MimageList());
     }

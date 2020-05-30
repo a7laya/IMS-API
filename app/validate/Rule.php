@@ -42,7 +42,8 @@ class Rule extends BaseValidate
 
     // 不能将自己的id设置为父级id
     protected function checkRuleId($value, $rule='', $data=[], $field='', $title=''){
-        if(getValByKey('id',$data)== $value) return '不能将自身设为父级';
+        if($value==0) return true;
+        if(getValByKey('id',$data) == $value) return '不能将自身设为父级';
         return true;
     }
 }
