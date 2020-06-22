@@ -2,7 +2,7 @@
 
 namespace app\model\common;
 
-use think\Model;
+use think\Model; 
 /**
  * @mixin think\Model
  */
@@ -112,6 +112,7 @@ class BaseModel extends Model
         return request()->Model->delete();
     }
     
+    // 批量删除
     public function MdeleteAll(){
         $param = request()->param('ids');
         // 找到所有数据并删除

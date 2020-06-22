@@ -4,6 +4,9 @@ namespace app\controller\admin;
 
 use think\Request;
 use app\controller\common\Base;
+use app\model\admin\GoodsStorehouse;
+use app\model\admin\StorehouseIn;
+use app\model\admin\StorehouseOut;
 class Goods extends Base
 {
 	protected $excludeValidateCheck = ['hotList','create'];
@@ -81,14 +84,13 @@ class Goods extends Base
 	public function find(Request $request)
 	{
 		$param = $request->param();
-		$limit = intval(getValByKey('limit',$param,20));
+		$limit = intval(getValByKey('limit',$param,200));
 		$model = $this->M;
 		if (array_key_exists('title',$param)) {
-        	$model = $model->field('id, title')->where('title','like','%'.$param['title'].'%');
+        	$model = $model->with('goodsStorehouse')->where('title','like','%'.$param['title'].'%');
 		}
 		$totalCount = $model->count();
 		$list = $model->page($param['page'],$limit)
-				->field('id, title')
 		        ->order([ 'id'=>'desc' ])
 				->select();
 		return showSuccess([
@@ -242,10 +244,23 @@ class Goods extends Base
     // 彻底删除
     public function destroy(){
     	$ids = request()->param('ids');
-    	$res = $this->M->onlyTrashed()->where('id','in',$ids)->select();
+		$res = $this->M->onlyTrashed()->where('id','in',$ids)->select();
     	$res->each(function($item){
     		$item->force()->delete();
-    	});
+		});
+		// 同时彻底删除相关的库存及出入库单记录
+		$res = GoodsStorehouse::onlyTrashed()->where('goods_id','in',$ids)->select();
+    	$res->each(function($item){
+    		$item->force()->delete();
+		});
+		$res = StorehouseIn::onlyTrashed()->where('goods_id','in',$ids)->select();
+    	$res->each(function($item){
+    		$item->force()->delete();
+		});
+		$res = StorehouseOut::onlyTrashed()->where('goods_id','in',$ids)->select();
+    	$res->each(function($item){
+    		$item->force()->delete();
+		});
     	return showSuccess('ok');
     }
     
@@ -255,14 +270,27 @@ class Goods extends Base
     	$res = $this->M->onlyTrashed()->where('id','in',$ids)->select();
     	$res->each(function($item){
     		$item->restore();
-    	});
+		});
+		
+		$res1 = GoodsStorehouse::onlyTrashed()->where('goods_id','in',$ids)->select();
+		$res1->each(function($item){
+    		$item->restore();
+		});
+		$res2 = StorehouseIn::onlyTrashed()->where('goods_id','in',$ids)->select();
+		$res2->each(function($item){
+    		$item->restore();
+		});
+		$res3 = StorehouseOut::onlyTrashed()->where('goods_id','in',$ids)->select();
+		$res3->each(function($item){
+    		$item->restore();
+		});
     	return showSuccess('ok');
     }
     
     // 批量删除
     public function deleteAll(){
     	$ids = request()->param('ids');
-    	$res = $this->M->where('id','in',$ids)->select();
+		$res = $this->M->where('id','in',$ids)->select();
     	$res->each(function($item){
     		$item->delete();
     	});

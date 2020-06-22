@@ -49,6 +49,21 @@ class Goods extends BaseModel
         // return $this->hasMany('Comment');
         return $this->hasMany('OrderItem')->whereNotNull('rating');
     }
+
+    // 关联入库单
+    public function storehouseIn(){
+        return $this->hasMany('StorehouseIn');
+    }
+
+    // 关联出库单
+    public function storehouseOut(){
+        return $this->hasMany('StorehouseOut');
+    }
+
+    // 关联存储位置
+    public function goodsStorehouse(){
+        return $this->hasMany('goodsStorehouse');
+    }
     
     // 关联规格信息
     public function goodsSkus(){
@@ -144,6 +159,15 @@ class Goods extends BaseModel
     public static function onAfterDelete($goods){
         // 删除对应的goods_skus_card
         $goods->goodsSkusCard->each(function($v){
+            $v->delete();
+        });
+        $goods->goodsStorehouse->each(function($v){
+            $v->delete();
+        });
+        $goods->storehouseIn->each(function($v){
+            $v->delete();
+        });
+        $goods->storehouseOut->each(function($v){
             $v->delete();
         });
     }

@@ -34,6 +34,22 @@ Route::group('admin',function(){
     Route::post('storehouse/:id/update_status','admin.Storehouse/updateStatus');
     Route::delete('storehouse/:id','admin.Storehouse/delete');
 
+    // 入库
+    Route::get('storehouse_in/:page','admin.StorehouseIn/index');
+    Route::post('storehouse_in/delete_all','admin.StorehouseIn/deleteAll');
+    Route::post('storehouse_in/:id/delete','admin.StorehouseIn/delete');
+    Route::post('storehouse_in/:id','admin.StorehouseIn/update');
+    Route::post('storehouse_in','admin.StorehouseIn/save');
+
+    // 出库
+    Route::get('storehouse_out/:page','admin.StorehouseOut/index');
+    Route::post('storehouse_out/delete_all','admin.StorehouseOut/deleteAll');
+    Route::post('storehouse_out/:id/delete','admin.StorehouseOut/delete');
+    Route::post('storehouse_out/:id','admin.StorehouseOut/update');
+    Route::post('storehouse_out','admin.StorehouseOut/save');
+
+
+
     // 规则
     Route::get('rule/:page','admin.Rule/index');
     Route::post('rule/:id/delete','admin.Rule/delete');
